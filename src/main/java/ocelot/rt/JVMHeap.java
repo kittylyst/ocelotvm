@@ -1,5 +1,7 @@
 package ocelot.rt;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -8,10 +10,26 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class JVMHeap {
 
-    private static final AtomicLong objCounter = new AtomicLong(0);
+
+    private static final AtomicLong objCounter = new AtomicLong(1L);
+    private List<JVMObj> heap = new LinkedList<>();
+
+    public JVMObj newObj(String klzStr) {
+        JVMObj o = new JVMObj(klzStr, objCounter.getAndIncrement());
+        heap.add(o);
+        return o;
+    }
+
+    public void delete(JVMObj o) {
+        // No GC
+    }
     
-    public static Object newObj(String klzStr) {
-        return new JVMObj(klzStr, objCounter.getAndIncrement());
+    public JVMObj findObject(long id) {
+        for (JVMObj o : heap) {
+            if (o.getId() == id)
+                return o;
+        }
+        return null;
     }
     
 }

@@ -23,5 +23,10 @@ public class JVMObj {
     JVMTypeMetadata getTypeMetadata() {
         return meta;
     }
+
+    public long getId() {
+        return id;
+    }
+    
     
 }
