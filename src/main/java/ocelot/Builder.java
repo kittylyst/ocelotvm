@@ -1,4 +1,4 @@
-package org.adoptopenjdk.ocelotvm;
+package ocelot;
 
 /**
  *

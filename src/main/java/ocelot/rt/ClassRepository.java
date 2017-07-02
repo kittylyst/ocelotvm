@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.adoptopenjdk.ocelotvm.runtime;
+package ocelot.rt;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentMap;
  * Holds all the loaded classes to date. Operations should be concurrent safe so
  * any data races are benign.
  *
- * @author boxcat
+ * @author ben
  */
 public class ClassRepository {
 

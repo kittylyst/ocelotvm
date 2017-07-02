@@ -1,14 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package org.adoptopenjdk.ocelotvm.runtime;
+package ocelot.rt;
 
 /**
  * This class should be public to allow the new opcode to create it
  * 
- * @author boxcat
+ * @author ben
  */
 public class JVMObj {
     private final JVMObjMetadata mark = new JVMObjMetadata();
