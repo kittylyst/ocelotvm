@@ -44,4 +44,9 @@ public class EvaluationStack extends Stack<JVMValue> {
         push(new JVMValue(JVMType.I, sub));
     }
 
+    void dup() {
+        JVMValue ev = peek().copy();
+        push(ev);
+    }
+
 }

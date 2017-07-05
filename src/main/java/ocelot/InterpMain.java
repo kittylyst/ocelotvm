@@ -6,9 +6,9 @@ import java.util.Arrays;
  *
  * @author ben
  */
-public class InterpMain {
+public final class InterpMain {
 
-    private Opcode[] table = new Opcode[256];
+    private final Opcode[] table = new Opcode[256];
 
     public void init() {
         for (Opcode op : Opcode.values()) {
@@ -22,7 +22,7 @@ public class InterpMain {
         }
         final int numOpcodes = Opcode.values().length;
         if (count != numOpcodes) {
-            throw new IllegalStateException("Opcode sanity check failed: "+ count +" opcodes found, should be "+ numOpcodes);
+            throw new IllegalStateException("Opcode sanity check failed: " + count + " opcodes found, should be " + numOpcodes);
         }
     }
 
@@ -31,7 +31,8 @@ public class InterpMain {
         if (instr == null || instr.length == 0)
             return null;
 
-        EvaluationStack eval = new EvaluationStack();
+        final EvaluationStack eval = new EvaluationStack();
+        final LocalVars lvt = new LocalVars(eval);
 
         int current = 0;
         LOOP:
@@ -44,6 +45,22 @@ public class InterpMain {
             }
             byte num = op.numParams();
             switch (op) {
+                case ALOAD:
+                    lvt.aload(instr[current++]);
+                    break;
+                case ALOAD_0:
+                    lvt.aload((byte) 0);
+                    break;
+                case ASTORE:
+                    lvt.astore(instr[current++]);
+                    break;
+                case DUP:
+                    eval.dup();
+                    break;
+                case GOTO:
+                    System.out.println(current + " += " + (instr[current] << 8) + " + " + instr[current + 1]);
+                    current += 2 + ((int) instr[current] << 8) + (int) instr[current + 1];
+                    break;
                 case IADD:
                     eval.iadd();
                     break;
@@ -66,10 +83,10 @@ public class InterpMain {
                     eval.idiv();
                     break;
                 case IINC:
-                    iinc(instr[current++]);
+                    lvt.iinc(instr[current++]);
                     break;
                 case ILOAD:
-                    iload(instr[current++]);
+                    lvt.iload(instr[current++]);
                     break;
                 case IMUL:
                     eval.imul();
@@ -77,15 +94,17 @@ public class InterpMain {
                 case IRETURN:
                     return eval.pop();
                 case ISTORE:
-                    istore(instr[current++]);
+                    lvt.istore(instr[current++]);
                     break;
                 case ISUB:
                     eval.isub();
                     break;
+                case NOP:
+                    break;
+                case POP:
+                    eval.pop();
+                    break;
                 // Dummy implementation
-                case ALOAD:
-                case ALOAD_0:
-                case ASTORE:
                 case GETSTATIC:
                 case INVOKEVIRTUAL:
                 case LDC:
@@ -105,15 +124,4 @@ public class InterpMain {
         }
     }
 
-    void iinc(byte b) {
-
-    }
-
-    private void iload(byte b) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private void istore(byte b) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }

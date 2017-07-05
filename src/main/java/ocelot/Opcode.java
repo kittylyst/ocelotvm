@@ -24,7 +24,19 @@ public enum Opcode {
                     return 1;
                 }
             },
+    DUP(0x59) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },    
     GETSTATIC(0xb2) {
+                @Override
+                public byte numParams() {
+                    return 2;
+                }
+            },
+    GOTO(0xa7) {
                 @Override
                 public byte numParams() {
                     return 2;
@@ -119,8 +131,19 @@ public enum Opcode {
                 public byte numParams() {
                     return 1;
                 }
-
             },
+    NOP(0x00) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    POP(0x57) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },    
     RETURN(0xb1) {
                 @Override
                 public byte numParams() {

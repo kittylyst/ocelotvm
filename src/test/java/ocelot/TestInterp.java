@@ -52,9 +52,37 @@ public class TestInterp {
         res = im.execMethod(buf3);
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be -2", -2, (int) res.value);
-
     }
 
+    @Test
+    public void jump_over_unimpld_opcodes() {
+        byte[] buf = {ICONST_1.B(), ICONST_1.B(), IADD.B(), GOTO.B(), (byte) 0, (byte) 1, (byte) 0xff, IRETURN.B()};
+        JVMValue res = im.execMethod(buf);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 2", 2, (int) res.value);
+    }
+
+    @Test
+    public void iconst_store_iinc_load() {
+        byte[] buf = {ICONST_1.B(), ISTORE.B(), (byte) 1, IINC.B(), (byte) 1, ILOAD.B(), (byte) 1, IRETURN.B()};
+        JVMValue res = im.execMethod(buf);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 2", 2, (int) res.value);
+    }
+
+    @Test
+    public void iconst_dup() {
+        byte[] buf = {ICONST_1.B(), DUP.B(), IADD.B(), IRETURN.B()};
+        JVMValue res = im.execMethod(buf);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 2", 2, (int) res.value);
+    }
+
+    // FIXME Test NOP and POP
+    
     private byte[] pullBytes(String fName) throws IOException {
         try (InputStream is = TestInterp.class.getClassLoader().getResourceAsStream(fName);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream()) {

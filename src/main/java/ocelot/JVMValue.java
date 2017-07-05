@@ -7,7 +7,7 @@ package ocelot;
  * 
  * @author ben
  */
-class JVMValue {
+public class JVMValue {
     final JVMType type;
     final long value;
 
@@ -15,4 +15,10 @@ class JVMValue {
         this.type = t;
         this.value = bits;
     }
+
+    JVMValue copy() {
+        return new JVMValue(type, value);
+    }
+    
+    
 }
