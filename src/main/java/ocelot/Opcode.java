@@ -102,6 +102,30 @@ public enum Opcode {
                     return 2;
                 }
             },
+    IFGE(0x9c) {
+                @Override
+                public byte numParams() {
+                    return 2;
+                }
+            },
+    IFGT(0x9d) {
+                @Override
+                public byte numParams() {
+                    return 2;
+                }
+            },
+    IFLE(0x9e) {
+                @Override
+                public byte numParams() {
+                    return 2;
+                }
+            },
+    IFLT(0x9b) {
+                @Override
+                public byte numParams() {
+                    return 2;
+                }
+            },
     IFNE(0x9a) {
                 @Override
                 public byte numParams() {

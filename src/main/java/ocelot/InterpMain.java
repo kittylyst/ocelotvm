@@ -44,6 +44,8 @@ public final class InterpMain {
                 System.exit(1);
             }
             byte num = op.numParams();
+            JVMValue v;
+            int jumpTo;
             switch (op) {
                 case ALOAD:
                     lvt.aload(instr[current++]);
@@ -89,17 +91,45 @@ public final class InterpMain {
                     eval.idiv();
                     break;
                 case IFEQ:
-                    JVMValue v = eval.pop();
-                    int jumpTo = ((int) instr[current++] << 8) + (int) instr[current++];
+                    v = eval.pop();
+                    jumpTo = ((int) instr[current++] << 8) + (int) instr[current++];
                     if (v.value == 0L) {
                         current += jumpTo - 1; // The -1 is necessary as we've already inc'd current
                     }
                     break;
+                case IFGE:
+                    v = eval.pop();
+                    jumpTo = ((int) instr[current++] << 8) + (int) instr[current++];
+                    if (v.value >= 0L) {
+                        current += jumpTo - 1; // The -1 is necessary as we've already inc'd current
+                    }
+                    break;
+                case IFGT:
+                    v = eval.pop();
+                    jumpTo = ((int) instr[current++] << 8) + (int) instr[current++];
+                    if (v.value > 0L) {
+                        current += jumpTo - 1; // The -1 is necessary as we've already inc'd current
+                    }
+                    break;
+                case IFLE:
+                    v = eval.pop();
+                    jumpTo = ((int) instr[current++] << 8) + (int) instr[current++];
+                    if (v.value <= 0L) {
+                        current += jumpTo - 1; // The -1 is necessary as we've already inc'd current
+                    }
+                    break;
+                case IFLT:
+                    v = eval.pop();
+                    jumpTo = ((int) instr[current++] << 8) + (int) instr[current++];
+                    if (v.value < 0L) {
+                        current += jumpTo - 1; // The -1 is necessary as we've already inc'd current
+                    }
+                    break;
                 case IFNE:
-                    JVMValue v2 = eval.pop();
-                    int jumpTo2 = ((int) instr[current] << 8) + (int) instr[current+1];
-                    if (v2.value != 0L) {
-                        current += jumpTo2 - 1;  // The -1 is necessary as we've already inc'd current
+                    v = eval.pop();
+                    jumpTo = ((int) instr[current] << 8) + (int) instr[current + 1];
+                    if (v.value != 0L) {
+                        current += jumpTo - 1;  // The -1 is necessary as we've already inc'd current
                     }
                     break;
                 case IINC:
