@@ -49,4 +49,9 @@ public class EvaluationStack extends Stack<JVMValue> {
         push(ev);
     }
 
+    void ineg() {
+        JVMValue ev = pop();
+        push(new JVMValue(JVMType.I, -ev.value));
+    }
+
 }

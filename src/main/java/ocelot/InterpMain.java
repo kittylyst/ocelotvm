@@ -144,8 +144,17 @@ public final class InterpMain {
                 case ILOAD_1:
                     lvt.iload((byte) 1);
                     break;
+                case ILOAD_2:
+                    lvt.iload((byte) 2);
+                    break;
+                case ILOAD_3:
+                    lvt.iload((byte) 3);
+                    break;
                 case IMUL:
                     eval.imul();
+                    break;
+                case INEG:
+                    eval.ineg();
                     break;
                 case IRETURN:
                     return eval.pop();
@@ -157,6 +166,12 @@ public final class InterpMain {
                     break;
                 case ISTORE_1:
                     lvt.istore((byte) 1);
+                    break;
+                case ISTORE_2:
+                    lvt.istore((byte) 2);
+                    break;
+                case ISTORE_3:
+                    lvt.istore((byte) 3);
                     break;
                 case ISUB:
                     eval.isub();

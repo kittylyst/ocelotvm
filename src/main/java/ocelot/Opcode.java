@@ -144,6 +144,12 @@ public enum Opcode {
                     return 0;
                 }
             },
+    INEG(0x74) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
     ISUB(0x64) {
                 @Override
                 public byte numParams() {
@@ -163,6 +169,18 @@ public enum Opcode {
                 }
             },
     ILOAD_1(0x1b) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    ILOAD_2(0x1c) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    ILOAD_3(0x1d) {
                 @Override
                 public byte numParams() {
                     return 0;
@@ -193,6 +211,18 @@ public enum Opcode {
                 }
             },
     ISTORE_1(0x3c) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    ISTORE_2(0x3d) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    ISTORE_3(0x3e) {
                 @Override
                 public byte numParams() {
                     return 0;
