@@ -47,14 +47,26 @@ public final class InterpMain {
             JVMValue v;
             int jumpTo;
             switch (op) {
+                case ACONST_NULL:
+                    eval.aconst_null();
+                    break;
                 case ALOAD:
                     lvt.aload(instr[current++]);
                     break;
                 case ALOAD_0:
                     lvt.aload((byte) 0);
                     break;
+                case ALOAD_1:
+                    lvt.aload((byte) 1);
+                    break;
                 case ASTORE:
                     lvt.astore(instr[current++]);
+                    break;
+                case ASTORE_0:
+                    lvt.astore((byte) 0);
+                    break;
+                case ASTORE_1:
+                    lvt.astore((byte) 1);
                     break;
                 case DUP:
                     eval.dup();

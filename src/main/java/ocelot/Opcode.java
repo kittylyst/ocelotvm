@@ -6,6 +6,12 @@ package ocelot;
  */
 public enum Opcode {
 
+    ACONST_NULL(0x01) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
     ALOAD(0x19) {
                 @Override
                 public byte numParams() {
@@ -18,10 +24,28 @@ public enum Opcode {
                     return 0;
                 }
             },
+    ALOAD_1(0x2b) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
     ASTORE(0x53) {
                 @Override
                 public byte numParams() {
                     return 1;
+                }
+            },
+    ASTORE_0(0x4b) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    ASTORE_1(0x4c) {
+                @Override
+                public byte numParams() {
+                    return 0;
                 }
             },
     BREAKPOINT(0xca) {

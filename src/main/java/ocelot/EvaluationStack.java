@@ -70,4 +70,8 @@ public class EvaluationStack extends Stack<JVMValue> {
         push(new JVMValue(JVMType.I, or));
     }
 
+    void aconst_null() {
+        push(new JVMValue(JVMType.A, 0L));
+    }
+
 }
