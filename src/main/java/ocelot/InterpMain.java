@@ -66,6 +66,9 @@ public final class InterpMain {
                 case IADD:
                     eval.iadd();
                     break;
+                case IAND:
+                    eval.iand();
+                    break;
                 case ICONST_0:
                     eval.iconst(0);
                     break;
@@ -156,6 +159,9 @@ public final class InterpMain {
                 case INEG:
                     eval.ineg();
                     break;
+                case IOR:
+                    eval.ior();
+                    break;
                 case IRETURN:
                     return eval.pop();
                 case ISTORE:
@@ -181,6 +187,21 @@ public final class InterpMain {
                 case POP:
                     eval.pop();
                     break;
+                case POP2:
+                    JVMValue discard = eval.pop();
+                    if (discard.type == JVMType.J || discard.type == JVMType.D) {
+                        break;
+                    }
+                    eval.pop();
+                    break;
+                // Disallowed opcodes
+                case BREAKPOINT:
+                case IMPDEP1:
+                case IMPDEP2:
+                case JSR:
+                case JSR_W:
+                case RET:
+                    throw new IllegalArgumentException("Illegal opcode byte: " + (b & 0xff) + " encountered at position " + (current - 1) + ". Stopping.");
                 // Dummy implementation
                 case GETSTATIC:
                 case INVOKEVIRTUAL:

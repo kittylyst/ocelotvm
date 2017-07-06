@@ -24,6 +24,12 @@ public enum Opcode {
                     return 1;
                 }
             },
+    BREAKPOINT(0xca) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
     DUP(0x59) {
                 @Override
                 public byte numParams() {
@@ -43,6 +49,12 @@ public enum Opcode {
                 }
             },
     IADD(0x60) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    IAND(0x7e) {
                 @Override
                 public byte numParams() {
                     return 0;
@@ -138,6 +150,18 @@ public enum Opcode {
                     return 2;
                 }
             },
+    IMPDEP1(0xfe) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    IMPDEP2(0xff) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
     IMUL(0x68) {
                 @Override
                 public byte numParams() {
@@ -145,6 +169,12 @@ public enum Opcode {
                 }
             },
     INEG(0x74) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    IOR(0x80) {
                 @Override
                 public byte numParams() {
                     return 0;
@@ -228,6 +258,18 @@ public enum Opcode {
                     return 0;
                 }
             },
+    JSR(0xa8) {
+                @Override
+                public byte numParams() {
+                    return 2;
+                }
+            },
+    JSR_W(0xc9) {
+                @Override
+                public byte numParams() {
+                    return 2;
+                }
+            },
     LDC(0x12) {
                 @Override
                 public byte numParams() {
@@ -244,6 +286,18 @@ public enum Opcode {
                 @Override
                 public byte numParams() {
                     return 0;
+                }
+            },
+    POP2(0x58) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    RET(0xa9) {
+                @Override
+                public byte numParams() {
+                    return 1;
                 }
             },
     RETURN(0xb1) {

@@ -54,4 +54,20 @@ public class EvaluationStack extends Stack<JVMValue> {
         push(new JVMValue(JVMType.I, -ev.value));
     }
 
+    void iand() {
+        JVMValue ev1 = pop();
+        JVMValue ev2 = pop();
+        // For a runtime checking interpreter - type checks would go here...
+        int and = (int) ev1.value & (int) ev2.value;
+        push(new JVMValue(JVMType.I, and));
+    }
+
+    void ior() {
+        JVMValue ev1 = pop();
+        JVMValue ev2 = pop();
+        // For a runtime checking interpreter - type checks would go here...
+        int or = (int) ev1.value | (int) ev2.value;
+        push(new JVMValue(JVMType.I, or));
+    }
+
 }
