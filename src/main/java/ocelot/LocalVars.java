@@ -15,14 +15,14 @@ public final class LocalVars {
         stack = eval;
     }
     
-    void iinc(byte b) {
-        JVMValue var = vars[b & 0xff];
+    void iinc(byte offset, byte amount) {
+        JVMValue localVar = vars[offset & 0xff];
         // Type check...
-        if (var.type != I) 
-            throw new IllegalStateException("Wrong type "+ var.type +" encountered at local var: "+ (b & 0xff) +" should be I");
+        if (localVar.type != I) 
+            throw new IllegalStateException("Wrong type "+ localVar.type +" encountered at local var: "+ (offset & 0xff) +" should be I");
         
         // FIXME Overflow...?
-        vars[b & 0xff] = new JVMValue(I, 1 + var.value);
+        vars[offset & 0xff] = new JVMValue(I, amount + localVar.value);
     }
 
     void iload(byte b) {

@@ -29,7 +29,7 @@ public enum Opcode {
                 public byte numParams() {
                     return 0;
                 }
-            },    
+            },
     GETSTATIC(0xb2) {
                 @Override
                 public byte numParams() {
@@ -78,10 +78,34 @@ public enum Opcode {
                     return 0;
                 }
             },
+    ICONST_4(0x07) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    ICONST_5(0x08) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
     IDIV(0x6c) {
                 @Override
                 public byte numParams() {
                     return 0;
+                }
+            },
+    IFEQ(0x99) {
+                @Override
+                public byte numParams() {
+                    return 2;
+                }
+            },
+    IFNE(0x9a) {
+                @Override
+                public byte numParams() {
+                    return 2;
                 }
             },
     IINC(0x84) {
@@ -108,6 +132,18 @@ public enum Opcode {
                     return 1;
                 }
             },
+    ILOAD_0(0x1a) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    ILOAD_1(0x1b) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
     INVOKEVIRTUAL(0xb6) {
                 @Override
                 public byte numParams() {
@@ -124,6 +160,18 @@ public enum Opcode {
                 @Override
                 public byte numParams() {
                     return 1;
+                }
+            },
+    ISTORE_0(0x3b) {
+                @Override
+                public byte numParams() {
+                    return 0;
+                }
+            },
+    ISTORE_1(0x3c) {
+                @Override
+                public byte numParams() {
+                    return 0;
                 }
             },
     LDC(0x12) {
@@ -143,7 +191,7 @@ public enum Opcode {
                 public byte numParams() {
                     return 0;
                 }
-            },    
+            },
     RETURN(0xb1) {
                 @Override
                 public byte numParams() {
@@ -157,9 +205,9 @@ public enum Opcode {
     public int getOpcode() {
         return opcode;
     }
-    
+
     public byte B() {
-        return (byte)opcode;
+        return (byte) opcode;
     }
 
     private Opcode(final int b) {

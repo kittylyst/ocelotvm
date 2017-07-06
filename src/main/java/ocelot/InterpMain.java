@@ -40,7 +40,7 @@ public final class InterpMain {
             byte b = instr[current++];
             Opcode op = table[b & 0xff];
             if (op == null) {
-                System.err.println("Unrecognised opcode byte: " + (b & 0xff) + " encountered. Stopping.");
+                System.err.println("Unrecognised opcode byte: " + (b & 0xff) + " encountered at position " + (current - 1) + ". Stopping.");
                 System.exit(1);
             }
             byte num = op.numParams();
@@ -58,7 +58,7 @@ public final class InterpMain {
                     eval.dup();
                     break;
                 case GOTO:
-                    System.out.println(current + " += " + (instr[current] << 8) + " + " + instr[current + 1]);
+//                    System.out.println(current + " += " + (instr[current] << 8) + " + " + instr[current + 1]);
                     current += 2 + ((int) instr[current] << 8) + (int) instr[current + 1];
                     break;
                 case IADD:
@@ -76,17 +76,43 @@ public final class InterpMain {
                 case ICONST_3:
                     eval.iconst(3);
                     break;
+                case ICONST_4:
+                    eval.iconst(4);
+                    break;
+                case ICONST_5:
+                    eval.iconst(5);
+                    break;
                 case ICONST_M1:
                     eval.iconst(-1);
                     break;
                 case IDIV:
                     eval.idiv();
                     break;
+                case IFEQ:
+                    JVMValue v = eval.pop();
+                    int jumpTo = ((int) instr[current++] << 8) + (int) instr[current++];
+                    if (v.value == 0L) {
+                        current += jumpTo - 1; // The -1 is necessary as we've already inc'd current
+                    }
+                    break;
+                case IFNE:
+                    JVMValue v2 = eval.pop();
+                    int jumpTo2 = ((int) instr[current] << 8) + (int) instr[current+1];
+                    if (v2.value != 0L) {
+                        current += jumpTo2 - 1;  // The -1 is necessary as we've already inc'd current
+                    }
+                    break;
                 case IINC:
-                    lvt.iinc(instr[current++]);
+                    lvt.iinc(instr[current++], instr[current++]);
                     break;
                 case ILOAD:
                     lvt.iload(instr[current++]);
+                    break;
+                case ILOAD_0:
+                    lvt.iload((byte) 0);
+                    break;
+                case ILOAD_1:
+                    lvt.iload((byte) 1);
                     break;
                 case IMUL:
                     eval.imul();
@@ -95,6 +121,12 @@ public final class InterpMain {
                     return eval.pop();
                 case ISTORE:
                     lvt.istore(instr[current++]);
+                    break;
+                case ISTORE_0:
+                    lvt.istore((byte) 0);
+                    break;
+                case ISTORE_1:
+                    lvt.istore((byte) 1);
                     break;
                 case ISUB:
                     eval.isub();
