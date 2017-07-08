@@ -26,7 +26,7 @@ public class TestInterp {
 
     @Test
     public void hello_world_executes() throws IOException {
-        byte[] buf = pullBytes("Println.class");
+        byte[] buf = Utils.pullBytes("Println.class");
         int offset = 481; // Harcoded / hand-figured out
         byte[] tmp = {buf[offset], buf[offset + 1], buf[offset + 2], buf[offset + 3],
             buf[offset + 4], buf[offset + 5], buf[offset + 6], buf[offset + 7], buf[offset + 8]}; // new byte[9];
@@ -102,7 +102,7 @@ public class TestInterp {
 
     @Test
     public void simple_branching_executes() throws IOException {
-        byte[] buf = pullBytes("optjava/bc/SimpleTests.class");
+        byte[] buf = Utils.pullBytes("optjava/bc/SimpleTests.class");
         int offset = 330; // Harcoded / hand-figured out
         byte[] tmp = {buf[offset], buf[offset + 1], buf[offset + 2], buf[offset + 3],
             buf[offset + 4], buf[offset + 5], buf[offset + 6], buf[offset + 7], buf[offset + 8], buf[offset + 9], buf[offset + 10]}; // new byte[11];
@@ -143,20 +143,5 @@ public class TestInterp {
         assertNull("Return should be null", res);
     }
 
-    private byte[] pullBytes(String fName) throws IOException {
-        try (InputStream is = TestInterp.class.getClassLoader().getResourceAsStream(fName);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            byte[] buffer = new byte[4096];
-            for (;;) {
-                int nread = is.read(buffer);
-                if (nread <= 0) {
-                    break;
-                }
-                baos.write(buffer, 0, nread);
-            }
-            return baos.toByteArray();
-        }
-
-    }
 
 }

@@ -40,6 +40,18 @@ public final class ClassEntry {
         return clzBytes;
     }
 
+    public int getMajor() {
+        return major;
+    }
+
+    public int getMinor() {
+        return minor;
+    }
+
+    public int getPoolItems() {
+        return poolItems;
+    }
+    
     @Override
     public String toString() {
         return "ClassEntry{" + "file_name=" + file_name + ", major=" + major + ", minor=" + minor + ", poolItems=" + poolItems + '}';
