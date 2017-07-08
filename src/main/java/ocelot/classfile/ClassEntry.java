@@ -1,5 +1,7 @@
 package ocelot.classfile;
 
+import java.nio.charset.Charset;
+
 /**
  *
  * @author ben
@@ -24,8 +26,8 @@ public final class ClassEntry {
     }
 
     static {
-        for (CPType op : CPType.values()) {
-            table[op.getOpcode()] = op;
+        for (CPType cp : CPType.values()) {
+            table[cp.getValue()] = cp;
         }
         // Sanity check
         int count = 0;
@@ -33,11 +35,10 @@ public final class ClassEntry {
             if (table[i] != null)
                 count++;
         }
-//        final int numOpcodes = Opcode.values().length;
-//        if (count != numOpcodes) {
-//            throw new IllegalStateException("Opcode sanity check failed: " + count + " opcodes found, should be " + numOpcodes);
-//        }
-
+        final int numCPTypes = CPType.values().length;
+        if (count != numCPTypes) {
+            throw new IllegalStateException("Constant pool sanity check failed: " + count + " types found, should be " + numCPTypes);
+        }
     }
 
     public void parseHeader() {
@@ -50,9 +51,8 @@ public final class ClassEntry {
         poolItems = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
     }
 
-    void parseConstantPool(int const_pool_count, byte[] this_file) {
-        int MAX_ITEMS = const_pool_count - 1;
-        int table_size_bytes = 0;
+    void parseConstantPool() throws ClassNotFoundException {
+        int MAX_ITEMS = poolItems - 1;
         int i;
         byte tag_byte;
         Ref r;
@@ -60,97 +60,56 @@ public final class ClassEntry {
         this.items = new Item[MAX_ITEMS]; // calloc(MAX_ITEMS, sizeof(Class));
         for (i = 1; i <= MAX_ITEMS; i++) {
             tag_byte = clzBytes[current++];
-
-            if (tag_byte < MIN_CPOOL_TAG || tag_byte > MAX_CPOOL_TAG) {
-                fprintf(stderr, "Tag byte '%d' is outside permitted range %u to %u\n", tag_byte, MIN_CPOOL_TAG, MAX_CPOOL_TAG);
-                table_size_bytes = 0;
-                break; // fail fast
+            CPType tag = table[tag_byte & 0xff];
+            if (tag == null) {
+                throw new ClassNotFoundException("Unrecognised tag byte: " + (tag_byte & 0xff) + " encountered at position " + (current - 1) + ". Stopping the parse.");
             }
 
-            String s;
-            uint16_t ptr_idx = i - 1;
-            Item item = this.items + ptr_idx; // FIXME
-            CPType tag = tag_byte;
-
-            // Populate item based on tag_byte
+            Item item = null;
+            System.out.println("Tag seen: "+ tag);
+            // Create item based on tag
             switch (tag) {
-                case STRING_UTF8: // String prefixed by a uint16 indicating the number of bytes in the encoded string which immediately follows
-                    fread( & s.length, sizeof(s.length), 1, this_file.file);
-                    s.length = be16toh(s.length);
-                    s.value = malloc(sizeof(char) * s.length);
-                    fread(s.value, sizeof(char), s.length, this_file.file);
-                    item.value.string = s;
-                    table_size_bytes += 2 + s.length;
+                case UTF8: // String prefixed by a uint16 indicating the number of bytes in the encoded string which immediately follows
+                    int len = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+                    String str = new String(clzBytes, current, len, Charset.forName("UTF8"));
+
+                    current += len;
                     break;
                 case INTEGER: // Integer: a signed 32-bit two's complement number in big-endian format
-                    fread( & item.value.integer, sizeof(item.value.integer), 1, this_file.file);
-                    item.value.integer = be32toh(item.value.integer);
-                    table_size_bytes += 4;
+                    int i2 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     break;
                 case FLOAT: // Float: a 32-bit single-precision IEEE 754 floating-point number
-                    fread( & item.value.flt, sizeof(item.value.flt), 1, this_file.file);
-                    item.value.flt = be32toh(item.value.flt);
-                    table_size_bytes += 4;
+                    int i3 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+                    float f = Float.intBitsToFloat(i3);
                     break;
                 case LONG: // Long: a signed 64-bit two's complement number in big-endian format (takes two slots in the constant pool table)
-                    fread( & item.value.lng.high, sizeof(item.value.lng.high), 1, this_file.file); // 4 bytes
-                    fread( & item.value.lng.low, sizeof(item.value.lng.low), 1, this_file.file); // 4 bytes
-                    item.value.lng.high = be32toh(item.value.lng.high);
-                    item.value.lng.low = be32toh(item.value.lng.low);
-                    // 8-byte consts take 2 pool entries
-                    ++i;
-                    table_size_bytes += 8;
-                    break;
                 case DOUBLE: // Double: a 64-bit double-precision IEEE 754 floating-point number (takes two slots in the constant pool table)
-                    fread( & item.value.dbl.high, sizeof(item.value.dbl.high), 1, this_file.file); // 4 bytes
-                    fread( & item.value.dbl.low, sizeof(item.value.dbl.low), 1, this_file.file); // 4 bytes
-                    item.value.dbl.high = be32toh(item.value.dbl.high);
-                    item.value.dbl.low = be32toh(item.value.dbl.low);
-                    // 8-byte consts take 2 pool entries
-                    ++i;
-                    table_size_bytes += 8;
+                    // FIXME
+                    current += 8;
                     break;
-                case CLASS: // Class reference: an uint16 within the constant pool to a UTF-8 string containing the fully qualified this name
-                    fread( & r.this_idx, sizeof(r.this_idx), 1, this_file.file);
-                    r.this_idx = be16toh(r.this_idx);
-                    item.value.ref = r;
-                    table_size_bytes += 2;
+                case CLASS: // Class reference: an uint16 within the constant pool to a UTF-8 string containing the fully qualified class name
+                    int ref = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     break;
                 case STRING: // String reference: an uint16 within the constant pool to a UTF-8 string
-                    fread( & r.this_idx, sizeof(r.this_idx), 1, this_file.file);
-                    r.this_idx = be16toh(r.this_idx);
-                    item.value.ref = r;
-                    table_size_bytes += 2;
+                    int ref2 = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     break;
-                case FIELD: // Field reference: two uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
-				/* FALL THROUGH TO METHOD */
-                case METHOD: // Method reference: two uint16s within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
-				/* FALL THROUGH TO INTERFACE_METHOD */
-                case INTERFACE_METHOD: // Interface method reference: 2 uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
-                    fread( & r.this_idx, sizeof(r.this_idx), 1, this_file.file);
-                    fread( & r.name_idx, sizeof(r.name_idx), 1, this_file.file);
-                    r.this_idx = be16toh(r.this_idx);
-                    r.name_idx = be16toh(r.name_idx);
-                    item.value.ref = r;
-                    table_size_bytes += 4;
+                case FIELDREF: // Field reference: two uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
+				/* FALL THROUGH TO METHODREF */
+                case METHODREF: // Method reference: two uint16s within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
+				/* FALL THROUGH TO INTERFACE_METHODREF */
+                case INTERFACE_METHODREF: // Interface method reference: 2 uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
+                    int cRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+                    int nameAndTypeRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     break;
-                case NAME: // Name and type descriptor: 2 uint16 to UTF-8 strings, 1st representing a name (identifier), 2nd a specially encoded type descriptor
-                    fread( & r.this_idx, sizeof(r.this_idx), 1, this_file.file);
-                    fread( & r.name_idx, sizeof(r.name_idx), 1, this_file.file);
-                    r.this_idx = be16toh(r.this_idx);
-                    r.name_idx = be16toh(r.name_idx);
-                    item.value.ref = r;
-                    table_size_bytes += 4;
+                case NAMEANDTYPE: // Name and type descriptor: 2 uint16 to UTF-8 strings, 1st representing a name (identifier), 2nd a specially encoded type descriptor
+                    int nameRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+                    int typeRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     break;
                 default:
-                    fprintf(stderr, "Found tag byte '%d' but don't know what to do with it\n", tag_byte);
-                    item = NULL;
-                    break;
+                    throw new ClassNotFoundException("Reached impossible Constant Pool Tag.");
             }
-            if (item != NULL)
-                this.items[i - 1] =  * item;
+            items[i - 1] = item;
         }
-        this.pool_size_bytes = table_size_bytes;
     }
 
     public byte[] getClzBytes() {
