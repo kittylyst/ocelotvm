@@ -12,11 +12,6 @@ public class VMEarlyTests {
 
     private static InterpMain vm = new InterpMain();
 
-    @BeforeClass
-    public static void init() {
-        vm.init();
-    }
-
     /*
     @Test
     public void TestDoublesBasic() {

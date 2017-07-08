@@ -27,7 +27,7 @@ public final class OcelotReader {
             try {
                 final ClassReader cr = new ClassReader(in);
                 out = new ClassEntry(buf, clzPath.toString());
-                out.init(cr);
+//                out.init(cr);
             } catch (Exception e) {
                 throw new IOException("Could not read class file "+ clzPath, e);
             }

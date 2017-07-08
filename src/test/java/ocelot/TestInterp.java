@@ -1,12 +1,8 @@
 package ocelot;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.Arrays;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static ocelot.Opcode.*;
@@ -18,11 +14,6 @@ import static ocelot.Opcode.*;
 public class TestInterp {
 
     private static InterpMain im = new InterpMain();
-
-    @BeforeClass
-    public static void init() {
-        im.init();
-    }
 
     @Test
     public void hello_world_executes() throws IOException {

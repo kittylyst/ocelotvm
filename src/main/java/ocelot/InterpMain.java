@@ -8,9 +8,9 @@ import java.util.Arrays;
  */
 public final class InterpMain {
 
-    private final Opcode[] table = new Opcode[256];
+    private static final Opcode[] table = new Opcode[256];
 
-    public void init() {
+    static {
         for (Opcode op : Opcode.values()) {
             table[op.getOpcode()] = op;
         }
