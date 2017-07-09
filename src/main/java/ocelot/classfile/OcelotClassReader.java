@@ -143,7 +143,40 @@ public final class OcelotClassReader {
     public CPEntry getCPEntry(int i) {
         return items[i - 1]; // CP is 1-based
     }
-    
+
+    public String resolveAsString(int i) {
+        final CPEntry top = items[i - 1];
+
+        CPEntry other = null;
+        int left, right = 0;
+        switch (top.getType()) {
+            case UTF8:
+                return top.getStr();
+            case INTEGER:
+                return "" + top.getNum().intValue();
+            case FLOAT:
+                return "" + top.getNum().floatValue();
+            case LONG:
+                return "" + top.getNum().longValue();
+            case DOUBLE:
+                return "" + top.getNum().doubleValue();
+            case CLASS:
+            case STRING:
+                other = items[top.getRef().getOther() - 1];
+                // Verification - could check type is STRING here
+                return other.getStr();
+            case FIELDREF:
+            case METHODREF:
+            case INTERFACE_METHODREF:
+            case NAMEANDTYPE:
+                left = top.getRef().getOther();
+                right = top.getRef2().getOther();
+                return resolveAsString(left) + top.getType().separator() + resolveAsString(right);
+            default:
+                throw new RuntimeException("Reached impossible Constant Pool Tag: " + top);
+        }
+    }
+
     @Override
     public String toString() {
         return "ClassEntry{" + "file_name=" + filename + ", major=" + major + ", minor=" + minor + ", poolItems=" + poolItemCount + '}';

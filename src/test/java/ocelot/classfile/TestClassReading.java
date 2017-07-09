@@ -11,12 +11,15 @@ import static ocelot.classfile.CPType.*;
  * @author ben
  */
 public class TestClassReading {
+
+    private OcelotClassReader ce;
+    private byte[] buf;
     
     @Test
-    public void check_valid_header() throws IOException, ClassNotFoundException {
+    public void check_cp_for_hello_world() throws IOException, ClassNotFoundException {
         String fName = "Println.class";
-        byte[] buf = Utils.pullBytes(fName);
-        OcelotClassReader ce = new OcelotClassReader(buf, fName);
+        buf = Utils.pullBytes(fName);
+        ce = new OcelotClassReader(buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
         assertEquals("Minor version should be 0", 0, ce.getMinor());
@@ -33,9 +36,17 @@ public class TestClassReading {
         cp2 = ce.getCPEntry(other);
         assertEquals("Entry 27 should be a UTF8", UTF8, cp2.getType());
         assertEquals("Entry 27 should be java/lang/Object", "java/lang/Object", cp2.getStr());
-        
-        fName = "optjava/bc/SimpleTests.class";
-        buf = Utils.pullBytes(fName);
+
+//        for (int i =1; i < ce.getPoolItemCount(); i++) {
+//            System.out.println(ce.resolveAsString(i));
+//        }
+        assertEquals("Entry 1 should be Object's ctor", "java/lang/Object.<init>:()V", ce.resolveAsString(1));
+    }
+
+    @Test
+    public void check_cp_for_simple_test() throws IOException, ClassNotFoundException {
+        String fName = "optjava/bc/SimpleTests.class";
+        byte[ ]buf = Utils.pullBytes(fName);
         ce = new OcelotClassReader(buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
@@ -43,5 +54,5 @@ public class TestClassReading {
         assertEquals("Constant Pool should contain 21 items", 21, ce.getPoolItemCount());
         ce.parseConstantPool();
     }
-    
+
 }
