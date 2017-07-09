@@ -87,49 +87,49 @@ public final class OcelotClassReader {
                 case UTF8: // String prefixed by a uint16 indicating the number of bytes in the encoded string which immediately follows
                     int len = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     String str = new String(clzBytes, current, len, Charset.forName("UTF8"));
-                    item = CPEntry.of(tag, str);
+                    item = CPEntry.of(i+1, tag, str);
                     current += len;
                     break;
                 case INTEGER: // Integer: a signed 32-bit two's complement number in big-endian format
                     int i2 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(tag, i2);
+                    item = CPEntry.of(i+1, tag, i2);
                     break;
                 case FLOAT: // Float: a 32-bit single-precision IEEE 754 floating-point number
                     int i3 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     float f = Float.intBitsToFloat(i3);
-                    item = CPEntry.of(tag, f);
+                    item = CPEntry.of(i+1, tag, f);
                     break;
                 case LONG: // Long: a signed 64-bit two's complement number in big-endian format (takes two slots in the constant pool table)
                     int i4 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     int i5 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     long l = ((long) i4 << 32) + (long) i5;
-                    item = CPEntry.of(tag, l);
+                    item = CPEntry.of(i+1, tag, l);
                     break;
                 case DOUBLE: // Double: a 64-bit double-precision IEEE 754 floating-point number (takes two slots in the constant pool table)
                     i4 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     i5 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     l = ((long) i4 << 32) + (long) i5;
-                    item = CPEntry.of(tag, Double.longBitsToDouble(l));
+                    item = CPEntry.of(i+1, tag, Double.longBitsToDouble(l));
                     break;
                 case CLASS: // Class reference: an uint16 within the constant pool to a UTF-8 string containing the fully qualified class name
                     int ref = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(tag, new Ref(ref));
+                    item = CPEntry.of(i+1, tag, new Ref(ref));
                     break;
                 case STRING: // String reference: an uint16 within the constant pool to a UTF-8 string
                     int ref2 = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(tag, new Ref(ref2));
+                    item = CPEntry.of(i+1, tag, new Ref(ref2));
                     break;
                 case FIELDREF: // Field reference: two uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                 case METHODREF: // Method reference: two uint16s within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                 case INTERFACE_METHODREF: // Interface method reference: 2 uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                     int cRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     int nameAndTypeRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(tag, new Ref(cRef), new Ref(nameAndTypeRef));
+                    item = CPEntry.of(i+1, tag, new Ref(cRef), new Ref(nameAndTypeRef));
                     break;
                 case NAMEANDTYPE: // Name and type descriptor: 2 uint16 to UTF-8 strings, 1st representing a name (identifier), 2nd a specially encoded type descriptor
                     int nameRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     int typeRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(tag, new Ref(nameRef), new Ref(typeRef));
+                    item = CPEntry.of(i+1, tag, new Ref(nameRef), new Ref(typeRef));
                     break;
                 default:
                     throw new ClassNotFoundException("Reached impossible Constant Pool Tag.");
@@ -212,6 +212,14 @@ public final class OcelotClassReader {
 
     public CPEntry getCPEntry(int i) {
         return items[i - 1]; // CP is 1-based
+    }
+
+    public CPEntry getThisClass() {
+        return getCPEntry(thisClzIndex);
+    }
+
+    public CPEntry getSuperClass() {
+        return getCPEntry(superClzIndex);
     }
 
     public String resolveAsString(int i) {

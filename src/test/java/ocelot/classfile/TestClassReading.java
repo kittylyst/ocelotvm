@@ -41,6 +41,17 @@ public class TestClassReading {
 //            System.out.println(ce.resolveAsString(i));
 //        }
         assertEquals("Entry 1 should be Object's ctor", "java/lang/Object.<init>:()V", ce.resolveAsString(1));
+        ce.parseBasicTypeInfo();
+        assertTrue(fName+" should be public", ce.isPublic());
+        assertFalse(fName+" should not be abstract", ce.isAbstract());
+        assertFalse(fName+" should not be annotation", ce.isAnnotation());
+        
+        CPEntry self = ce.getThisClass();
+        String toStr = ce.resolveAsString(self.getIndex());
+        assertEquals("Self class should resolve to kathik/Println", "kathik/Println", toStr);
+        CPEntry superClz = ce.getSuperClass();
+        toStr = ce.resolveAsString(superClz.getIndex());
+        assertEquals("Superclass should resolve to java/lang/Object", "java/lang/Object", toStr);   
     }
 
     @Test
