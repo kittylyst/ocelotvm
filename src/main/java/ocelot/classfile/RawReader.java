@@ -6,8 +6,8 @@ package ocelot.classfile;
  */
 public class RawReader {
 
-    public ClassEntry readKlazz(byte[] contents, String fName) {
-        ClassEntry klazz = new ClassEntry(contents, fName);
+    public OcelotClassReader readKlazz(byte[] contents, String fName) {
+        OcelotClassReader klazz = new OcelotClassReader(contents, fName);
 	klazz.parseHeader();
 
 //	parseConstantPool(klazz, klazz.const_pool_count, klazz_file);
@@ -115,7 +115,7 @@ void parse_attribute(byte[] klazz_file, Attribute *attr) {
 */
 
 
-//void parseConstantPool(ClassEntry klazz, int const_pool_count, byte[] klazz_file) {
+//void parseConstantPool(OcelotClassReader klazz, int const_pool_count, byte[] klazz_file) {
 //	const int MAX_ITEMS = const_pool_count - 1;
 //	uint32_t table_size_bytes = 0;
 //	int i;
