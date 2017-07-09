@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import org.objectweb.asm.ClassReader;
 
 /**
@@ -20,10 +22,23 @@ public final class OcelotClassReader {
     private int minor = 0;
 
     private int poolItemCount = 0;
-    private int current = 0;
-    private CPEntry[] items;
-
     private final static CPType[] table = new CPType[256];
+    private int current = 0;
+
+    private int flags = 0;
+    private int thisClzIndex;
+    private int superClzIndex;
+    private CPEntry[] items;
+    private int[] interfaces;
+
+    public static final int ACC_PUBLIC = 0x0001;      // Declared public; may be accessed from outside its package.
+    public static final int ACC_FINAL = 0x0010;       // Declared final; no subclasses allowed.
+    public static final int ACC_SUPER = 0x0020;       // Treat superclass methods specially when invoked by the invokespecial instruction.
+    public static final int ACC_INTERFACE = 0x0200;   // Is an interface, not a class.
+    public static final int ACC_ABSTRACT = 0x0400;    // Declared abstract; must not be instantiated.
+    public static final int ACC_SYNTHETIC = 0x1000;   // Declared synthetic; not present in the source code.
+    public static final int ACC_ANNOTATION = 0x2000;  // Declared as an annotation type.
+    public static final int ACC_ENUM = 0x4000; 	      // Declared as an enum type. 
 
     public OcelotClassReader(byte[] buf, String fName) {
         filename = fName;
@@ -56,7 +71,7 @@ public final class OcelotClassReader {
         poolItemCount = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
     }
 
-    void parseConstantPool() throws ClassNotFoundException {
+    public void parseConstantPool() throws ClassNotFoundException {
         items = new CPEntry[poolItemCount - 1];
         for (int i = 0; i < poolItemCount - 1; i++) {
             int entry = clzBytes[current++] & 0xff;
@@ -91,9 +106,10 @@ public final class OcelotClassReader {
                     item = CPEntry.of(tag, l);
                     break;
                 case DOUBLE: // Double: a 64-bit double-precision IEEE 754 floating-point number (takes two slots in the constant pool table)
-                    // FIXME
-                    item = CPEntry.of(tag, 3.14);
-                    current += 8;
+                    i4 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+                    i5 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+                    l = ((long) i4 << 32) + (long) i5;
+                    item = CPEntry.of(tag, Double.longBitsToDouble(l));
                     break;
                 case CLASS: // Class reference: an uint16 within the constant pool to a UTF-8 string containing the fully qualified class name
                     int ref = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
@@ -104,9 +120,7 @@ public final class OcelotClassReader {
                     item = CPEntry.of(tag, new Ref(ref2));
                     break;
                 case FIELDREF: // Field reference: two uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
-				/* FALL THROUGH TO METHODREF */
                 case METHODREF: // Method reference: two uint16s within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
-				/* FALL THROUGH TO INTERFACE_METHODREF */
                 case INTERFACE_METHODREF: // Interface method reference: 2 uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                     int cRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     int nameAndTypeRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
@@ -124,6 +138,18 @@ public final class OcelotClassReader {
         }
     }
 
+    public void parseBasicTypeInfo() {
+        flags = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+        thisClzIndex = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+        superClzIndex = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+
+        int count = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+        interfaces = new int[count];
+        for (int i = 0; i < count; i++) {
+            interfaces[i] = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+        }
+    }
+
     public byte[] getClzBytes() {
         return clzBytes;
     }
@@ -138,6 +164,50 @@ public final class OcelotClassReader {
 
     public int getPoolItemCount() {
         return poolItemCount;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public boolean isAbstract() {
+        return (flags & ACC_ABSTRACT) > 0;
+    }
+
+    public boolean isAnnotation() {
+        return (flags & ACC_ANNOTATION) > 0;
+    }
+
+    public boolean isEnum() {
+        return (flags & ACC_ENUM) > 0;
+    }
+
+    public boolean isFinal() {
+        return (flags & ACC_FINAL) > 0;
+    }
+
+    public boolean isInterface() {
+        return (flags & ACC_INTERFACE) > 0;
+    }
+
+    public boolean isPublic() {
+        return (flags & ACC_PUBLIC) > 0;
+    }
+
+    public boolean isSuper() {
+        return (flags & ACC_SUPER) > 0;
+    }
+
+    public boolean isSynthetic() {
+        return (flags & ACC_SYNTHETIC) > 0;
+    }
+
+    public List<CPEntry> getInterfaces() {
+        List<CPEntry> out = new ArrayList<>();
+        for (int i : interfaces) {
+            out.add(getCPEntry(i));
+        }
+        return out;
     }
 
     public CPEntry getCPEntry(int i) {
