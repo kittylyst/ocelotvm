@@ -15,7 +15,7 @@ public class TestClassReading {
 
     private OcelotClassReader ce;
     private byte[] buf;
-    
+
     @Test
     public void check_cp_for_hello_world() throws IOException, ClassNotFoundException {
         String fName = "Println.class";
@@ -43,41 +43,50 @@ public class TestClassReading {
 //        }
         assertEquals("Entry 1 should be Object's ctor", "java/lang/Object.<init>:()V", ce.resolveAsString(1));
         ce.parseBasicTypeInfo();
-        assertTrue(fName+" should be public", ce.isPublic());
-        assertFalse(fName+" should not be abstract", ce.isAbstract());
-        assertFalse(fName+" should not be annotation", ce.isAnnotation());
-        
+        assertTrue(fName + " should be public", ce.isPublic());
+        assertFalse(fName + " should not be abstract", ce.isAbstract());
+        assertFalse(fName + " should not be annotation", ce.isAnnotation());
+
         CPEntry self = ce.getThisClass();
         String toStr = ce.resolveAsString(self.getIndex());
         assertEquals("Self class should resolve to kathik/Println", "kathik/Println", toStr);
         CPEntry superClz = ce.getSuperClass();
         toStr = ce.resolveAsString(superClz.getIndex());
-        assertEquals("Superclass should resolve to java/lang/Object", "java/lang/Object", toStr);   
+        assertEquals("Superclass should resolve to java/lang/Object", "java/lang/Object", toStr);
     }
 
     @Test
     public void check_simple_fields() throws IOException, ClassNotFoundException {
         String fName = "octest/SimpleFieldsAndMethods.class";
-        byte[ ]buf = Utils.pullBytes(fName);
+        byte[] buf = Utils.pullBytes(fName);
         ce = new OcelotClassReader(buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
         assertEquals("Minor version should be 0", 0, ce.getMinor());
         assertEquals("Constant Pool should contain 24 items", 24, ce.getPoolItemCount());
         ce.parseConstantPool();
-        
+
         ce.parseBasicTypeInfo();
-        assertTrue(fName+" should be public", ce.isPublic());
-        assertFalse(fName+" should not be abstract", ce.isAbstract());
-        assertFalse(fName+" should not be annotation", ce.isAnnotation());
-        
+        assertTrue(fName + " should be public", ce.isPublic());
+        assertFalse(fName + " should not be abstract", ce.isAbstract());
+        assertFalse(fName + " should not be annotation", ce.isAnnotation());
+
         ce.parseFields();
         List<OcelotClassReader.CPField> fields = ce.getFields();
-        assertEquals(fName+ " should have 1 field", 1, fields.size());
+        assertEquals(fName + " should have 1 field", 1, fields.size());
         int idx = fields.get(0).getNameIndex();
-        assertEquals(fName+ " should have a field called a", "a", ce.getCPEntry(idx).getStr());
+        assertEquals(fName + " should have a field called a", "a", ce.getCPEntry(idx).getStr());
         idx = fields.get(0).getDescIndex();
-        assertEquals(fName+ " should have a field called a of type I", "I", ce.getCPEntry(idx).getStr());
+        assertEquals(fName + " should have a field called a of type I", "I", ce.getCPEntry(idx).getStr());
+
+//        ce.parseMethods();
+//        List<OcelotClassReader.CPMethod> methods = ce.getMethods();
+//        assertEquals(fName + " should have 2 methods", 2, methods.size());
+//        idx = methods.get(0).getNameIndex();
+//        assertEquals(fName + " should have a method called <init>", "<init>", ce.getCPEntry(idx).getStr());
+//        idx = methods.get(0).getDescIndex();
+//        assertEquals(fName + " should have a method of type ()V", "()V", ce.getCPEntry(idx).getStr());
+
     }
 
 }

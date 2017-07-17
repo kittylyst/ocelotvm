@@ -14,6 +14,4 @@ public class SimpleFieldsAndMethods {
         }
         return i;
     }
-
-    
 }
