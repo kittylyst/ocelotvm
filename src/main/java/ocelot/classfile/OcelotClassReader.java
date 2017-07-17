@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.objectweb.asm.ClassReader;
 
@@ -30,6 +31,7 @@ public final class OcelotClassReader {
     private int superClzIndex;
     private CPEntry[] items;
     private int[] interfaces;
+    private CPField[] fields;
 
     public static final int ACC_PUBLIC = 0x0001;      // Declared public; may be accessed from outside its package.
     public static final int ACC_FINAL = 0x0010;       // Declared final; no subclasses allowed.
@@ -87,49 +89,49 @@ public final class OcelotClassReader {
                 case UTF8: // String prefixed by a uint16 indicating the number of bytes in the encoded string which immediately follows
                     int len = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     String str = new String(clzBytes, current, len, Charset.forName("UTF8"));
-                    item = CPEntry.of(i+1, tag, str);
+                    item = CPEntry.of(i + 1, tag, str);
                     current += len;
                     break;
                 case INTEGER: // Integer: a signed 32-bit two's complement number in big-endian format
                     int i2 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i+1, tag, i2);
+                    item = CPEntry.of(i + 1, tag, i2);
                     break;
                 case FLOAT: // Float: a 32-bit single-precision IEEE 754 floating-point number
                     int i3 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     float f = Float.intBitsToFloat(i3);
-                    item = CPEntry.of(i+1, tag, f);
+                    item = CPEntry.of(i + 1, tag, f);
                     break;
                 case LONG: // Long: a signed 64-bit two's complement number in big-endian format (takes two slots in the constant pool table)
                     int i4 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     int i5 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     long l = ((long) i4 << 32) + (long) i5;
-                    item = CPEntry.of(i+1, tag, l);
+                    item = CPEntry.of(i + 1, tag, l);
                     break;
                 case DOUBLE: // Double: a 64-bit double-precision IEEE 754 floating-point number (takes two slots in the constant pool table)
                     i4 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     i5 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     l = ((long) i4 << 32) + (long) i5;
-                    item = CPEntry.of(i+1, tag, Double.longBitsToDouble(l));
+                    item = CPEntry.of(i + 1, tag, Double.longBitsToDouble(l));
                     break;
                 case CLASS: // Class reference: an uint16 within the constant pool to a UTF-8 string containing the fully qualified class name
                     int ref = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i+1, tag, new Ref(ref));
+                    item = CPEntry.of(i + 1, tag, new Ref(ref));
                     break;
                 case STRING: // String reference: an uint16 within the constant pool to a UTF-8 string
                     int ref2 = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i+1, tag, new Ref(ref2));
+                    item = CPEntry.of(i + 1, tag, new Ref(ref2));
                     break;
                 case FIELDREF: // Field reference: two uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                 case METHODREF: // Method reference: two uint16s within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                 case INTERFACE_METHODREF: // Interface method reference: 2 uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                     int cRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     int nameAndTypeRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i+1, tag, new Ref(cRef), new Ref(nameAndTypeRef));
+                    item = CPEntry.of(i + 1, tag, new Ref(cRef), new Ref(nameAndTypeRef));
                     break;
                 case NAMEANDTYPE: // Name and type descriptor: 2 uint16 to UTF-8 strings, 1st representing a name (identifier), 2nd a specially encoded type descriptor
                     int nameRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     int typeRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i+1, tag, new Ref(nameRef), new Ref(typeRef));
+                    item = CPEntry.of(i + 1, tag, new Ref(nameRef), new Ref(typeRef));
                     break;
                 default:
                     throw new ClassNotFoundException("Reached impossible Constant Pool Tag.");
@@ -150,6 +152,95 @@ public final class OcelotClassReader {
         }
     }
 
+    public void parseFields() {
+        int fCount = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+
+        this.fields = new CPField[fCount];
+        CPField f = null;
+
+        for (int idx = 0; idx < fCount; idx++) {
+            int fFlags = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+            int name_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+            int desc_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+            int attrs_count = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+            f = new CPField(fFlags, name_idx, desc_idx, attrs_count);
+
+            for (int aidx = 0; aidx < f.getAttrs().length; aidx++) {
+                f.setAttr(aidx, parseAttribute());
+            }
+            fields[idx] = f;
+        }
+
+    }
+
+    Attr parseAttribute() {
+        int name_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+        int len = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+        String str = new String(clzBytes, current, len, Charset.forName("UTF8"));
+
+        return new Attr(name_idx, str);
+    }
+
+    public static class CPField {
+
+        private int flags;
+        private int nameIndex;
+        private int descIndex;
+        private Attr[] attrs;
+
+        CPField(int fFlags, int name_idx, int desc_idx, int attrCount) {
+            flags = fFlags;
+            nameIndex = name_idx;
+            descIndex = desc_idx;
+            attrs = new Attr[attrCount];
+        }
+
+        public int getFlags() {
+            return flags;
+        }
+
+        public int getNameIndex() {
+            return nameIndex;
+        }
+
+        public int getDescIndex() {
+            return descIndex;
+        }
+
+        public Attr[] getAttrs() {
+            return attrs;
+        }
+
+        public void setAttr(int i, Attr attr) {
+            attrs[i] = attr;
+        }
+
+        @Override
+        public String toString() {
+            return "CPField{" + "flags=" + flags + ", nameIndex=" + nameIndex + ", descIndex=" + descIndex + ", attrs=" + Arrays.toString(attrs) + '}';
+        }
+
+    }
+
+    static class Attr {
+
+        private int nameIndex;
+        private String name;
+
+        private Attr(int name_idx, String str) {
+            nameIndex = name_idx;
+            name = str;
+        }
+
+        @Override
+        public String toString() {
+            return "Attr{" + "nameIndex=" + nameIndex + ", name=" + name + '}';
+        }
+    }
+
+    ///////////////////////////////////
+    //
+    // Helper methods
     public byte[] getClzBytes() {
         return clzBytes;
     }
@@ -206,6 +297,14 @@ public final class OcelotClassReader {
         List<CPEntry> out = new ArrayList<>();
         for (int i : interfaces) {
             out.add(getCPEntry(i));
+        }
+        return out;
+    }
+
+    public List<CPField> getFields() {
+        List<CPField> out = new ArrayList<>();
+        for (CPField f : fields) {
+            out.add(f);
         }
         return out;
     }
@@ -269,7 +368,6 @@ public final class OcelotClassReader {
             try {
                 final ClassReader cr = new ClassReader(in);
                 out = new OcelotClassReader(buf, clzPath.toString());
-//                out.init(cr);
             } catch (Exception e) {
                 throw new IOException("Could not read class file " + clzPath, e);
             }

@@ -1,6 +1,7 @@
 package ocelot.classfile;
 
 import java.io.IOException;
+import java.util.List;
 import ocelot.Utils;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -55,15 +56,28 @@ public class TestClassReading {
     }
 
     @Test
-    public void check_cp_for_simple_test() throws IOException, ClassNotFoundException {
-        String fName = "optjava/bc/SimpleTests.class";
+    public void check_simple_fields() throws IOException, ClassNotFoundException {
+        String fName = "octest/SimpleFieldsAndMethods.class";
         byte[ ]buf = Utils.pullBytes(fName);
         ce = new OcelotClassReader(buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
         assertEquals("Minor version should be 0", 0, ce.getMinor());
-        assertEquals("Constant Pool should contain 21 items", 21, ce.getPoolItemCount());
+        assertEquals("Constant Pool should contain 24 items", 24, ce.getPoolItemCount());
         ce.parseConstantPool();
+        
+        ce.parseBasicTypeInfo();
+        assertTrue(fName+" should be public", ce.isPublic());
+        assertFalse(fName+" should not be abstract", ce.isAbstract());
+        assertFalse(fName+" should not be annotation", ce.isAnnotation());
+        
+        ce.parseFields();
+        List<OcelotClassReader.CPField> fields = ce.getFields();
+        assertEquals(fName+ " should have 1 field", 1, fields.size());
+        int idx = fields.get(0).getNameIndex();
+        assertEquals(fName+ " should have a field called a", "a", ce.getCPEntry(idx).getStr());
+        idx = fields.get(0).getDescIndex();
+        assertEquals(fName+ " should have a field called a of type I", "I", ce.getCPEntry(idx).getStr());
     }
 
 }
