@@ -181,21 +181,21 @@ public final class OcelotClassReader {
             f = new CPField(fFlags, name_idx, desc_idx, attrs_count);
 
             for (int aidx = 0; aidx < f.getAttrs().length; aidx++) {
-                f.setAttr(aidx, parseAttribute());
+                f.setAttr(aidx, parseAttribute(f));
             }
             fields[idx] = f;
         }
 
     }
 
-    public static class CPField {
+    class CPBase {
 
-        private int flags;
-        private int nameIndex;
-        private int descIndex;
-        private CPAttr[] attrs;
+        protected int flags;
+        protected int nameIndex;
+        protected int descIndex;
+        protected CPAttr[] attrs;
 
-        CPField(int fFlags, int name_idx, int desc_idx, int attrCount) {
+        CPBase(int fFlags, int name_idx, int desc_idx, int attrCount) {
             flags = fFlags;
             nameIndex = name_idx;
             descIndex = desc_idx;
@@ -221,10 +221,39 @@ public final class OcelotClassReader {
         public void setAttr(int i, CPAttr attr) {
             attrs[i] = attr;
         }
+    }
+
+    class CPField extends CPBase {
+
+        public CPField(int fFlags, int name_idx, int desc_idx, int attrCount) {
+            super(fFlags, name_idx, desc_idx, attrCount);
+        }
 
         @Override
         public String toString() {
             return "CPField{" + "flags=" + flags + ", nameIndex=" + nameIndex + ", descIndex=" + descIndex + ", attrs=" + Arrays.toString(attrs) + '}';
+        }
+
+    }
+
+    class CPMethod extends CPBase {
+        private byte[] buf;
+        
+        CPMethod(int mFlags, int name_idx, int desc_idx, int attrCount) {
+            super(mFlags, name_idx, desc_idx, attrCount);
+        }
+
+        @Override
+        public String toString() {
+            return "CPMethod{" + "flags=" + flags + ", nameIndex=" + nameIndex + ", descIndex=" + descIndex + ", attrs=" + Arrays.toString(attrs) + '}';
+        }
+
+        private void setBytecode(byte[] b) {
+            buf = b;
+        }
+
+        public byte[] getBuf() {
+            return buf;
         }
     }
 
@@ -241,7 +270,7 @@ public final class OcelotClassReader {
             m = new CPMethod(mFlags, name_idx, desc_idx, attrs_count);
 
             for (int aidx = 0; aidx < m.getAttrs().length; aidx++) {
-                m.setAttr(aidx, parseAttribute());
+                m.setAttr(aidx, parseAttribute(m));
             }
 
             methods[idx] = m;
@@ -249,51 +278,11 @@ public final class OcelotClassReader {
 
     }
 
-    public static class CPMethod {
-
-        private int flags;
-        private int nameIndex;
-        private int descIndex;
-        private CPAttr[] attrs;
-
-        public CPMethod(int mFlags, int name_idx, int desc_idx, int attrCount) {
-            flags = mFlags;
-            nameIndex = name_idx;
-            descIndex = desc_idx;
-            attrs = new CPAttr[attrCount];
-        }
-
-        public int getFlags() {
-            return flags;
-        }
-
-        public int getNameIndex() {
-            return nameIndex;
-        }
-
-        public int getDescIndex() {
-            return descIndex;
-        }
-
-        public CPAttr[] getAttrs() {
-            return attrs;
-        }
-
-        public void setAttr(int i, CPAttr attr) {
-            attrs[i] = attr;
-        }
-
-        @Override
-        public String toString() {
-            return "CPMethod{" + "flags=" + flags + ", nameIndex=" + nameIndex + ", descIndex=" + descIndex + ", attrs=" + attrs + '}';
-        }
-    }
-
-    CPAttr parseAttribute() {
+    CPAttr parseAttribute(CPBase b) {
         int nameCPIdx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
         int attrLen = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
         int endIndex = current + attrLen;
-        
+
         // Now check to see what type of attribute it is...
         String s = getCPEntry(nameCPIdx).getStr();
 
@@ -303,10 +292,21 @@ public final class OcelotClassReader {
         // FIXME
         switch (s) {
             case "ConstantValue":
+                if (b instanceof CPMethod) {
+                    CPMethod m = (CPMethod) b;
+                    String methDesc = resolveAsString(m.nameIndex) + ":" + resolveAsString(m.descIndex);
+                    throw new IllegalArgumentException("Method " + methDesc + " cannot be a constant");
+                }
                 // FIXME
                 current += 2;
                 break;
             case "Code":
+                if (b instanceof CPField) {
+                    CPField f = (CPField) b;
+                    String fieldDesc = resolveAsString(f.nameIndex) + ":" + resolveAsString(f.descIndex);
+                    throw new IllegalArgumentException("Field " + fieldDesc + " cannot contain code");
+                }
+                final CPMethod m = (CPMethod) b;
 //    u2 max_stack;
 //    u2 max_locals;
                 // Don't care about stack depth or locals
@@ -315,6 +315,7 @@ public final class OcelotClassReader {
 //    u1 code[code_length];                
                 int codeLen = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                 byte[] bytecode = Arrays.copyOfRange(clzBytes, current, current + codeLen);
+                m.setBytecode(bytecode);
 //    u2 exception_table_length;
 //    {   u2 start_pc;
 //        u2 end_pc;
@@ -332,7 +333,7 @@ public final class OcelotClassReader {
         }
         // Skip to the end
         current = endIndex;
-        
+
         return new CPAttr(nameCPIdx);
     }
 

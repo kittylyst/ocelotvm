@@ -1,7 +1,9 @@
 package ocelot.classfile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import ocelot.InterpMain;
 import ocelot.Utils;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -82,11 +84,15 @@ public class TestClassReading {
         ce.parseMethods();
         List<OcelotClassReader.CPMethod> methods = ce.getMethods();
         assertEquals(fName + " should have 2 methods", 2, methods.size());
-        idx = methods.get(0).getNameIndex();
+        OcelotClassReader.CPMethod init = methods.get(0);
+        idx = init.getNameIndex();
         assertEquals(fName + " should have a method called <init>", "<init>", ce.getCPEntry(idx).getStr());
-        idx = methods.get(0).getDescIndex();
+        idx = init.getDescIndex();
         assertEquals(fName + " should have a method of type ()V", "()V", ce.getCPEntry(idx).getStr());
-
+        byte[] b = init.getBuf();
+        System.out.println(Arrays.toString(b));
+//        InterpMain im = new InterpMain();
+//        im.execMethod(b);
     }
 
 }
