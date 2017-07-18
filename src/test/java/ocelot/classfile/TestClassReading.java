@@ -79,13 +79,13 @@ public class TestClassReading {
         idx = fields.get(0).getDescIndex();
         assertEquals(fName + " should have a field called a of type I", "I", ce.getCPEntry(idx).getStr());
 
-//        ce.parseMethods();
-//        List<OcelotClassReader.CPMethod> methods = ce.getMethods();
-//        assertEquals(fName + " should have 2 methods", 2, methods.size());
-//        idx = methods.get(0).getNameIndex();
-//        assertEquals(fName + " should have a method called <init>", "<init>", ce.getCPEntry(idx).getStr());
-//        idx = methods.get(0).getDescIndex();
-//        assertEquals(fName + " should have a method of type ()V", "()V", ce.getCPEntry(idx).getStr());
+        ce.parseMethods();
+        List<OcelotClassReader.CPMethod> methods = ce.getMethods();
+        assertEquals(fName + " should have 2 methods", 2, methods.size());
+        idx = methods.get(0).getNameIndex();
+        assertEquals(fName + " should have a method called <init>", "<init>", ce.getCPEntry(idx).getStr());
+        idx = methods.get(0).getDescIndex();
+        assertEquals(fName + " should have a method of type ()V", "()V", ce.getCPEntry(idx).getStr());
 
     }
 
