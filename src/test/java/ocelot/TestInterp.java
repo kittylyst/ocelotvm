@@ -1,11 +1,12 @@
 package ocelot;
 
-import java.io.IOException;
-import java.util.Arrays;
-import static org.junit.Assert.*;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import static ocelot.Opcode.*;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -25,12 +26,12 @@ public class TestInterp {
     @Test
     public void int_divide_works() {
         byte[] buf = {ICONST_2.B(), ICONST_2.B(), IDIV.B(), IRETURN.B()};
-        JVMValue res = im.execMethod(buf);
+        JVMValue res = im.execMethod("", "main:()V", buf);
         assertEquals("Return type is int",  JVMType.I , res.type);
         assertEquals("Return value should be 1", 1, (int)res.value);
 
         byte[] buf1 = {0x05, 0x05, 0x6c, (byte) 0xac};
-        res = im.execMethod(buf1);
+        res = im.execMethod("", "main:()V", buf1);
         assertEquals("Return type is int",  JVMType.I , res.type);
         assertEquals("Return value should be 1", 1, (int)res.value);
 
@@ -39,20 +40,20 @@ public class TestInterp {
     @Test
     public void int_arithmetic_works() {
         byte[] buf = {ICONST_1.B(), ICONST_1.B(), IADD.B(), IRETURN.B()};
-        JVMValue res = im.execMethod(buf);
+        JVMValue res = im.execMethod("", "main:()V", buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
 
         // Using the raw bytes instead of the enum mnemonics
         byte[] buf2 = {0x04, 0x02, 0x60, (byte) 0xac};
-        res = im.execMethod(buf2);
+        res = im.execMethod("", "main:()V", buf2);
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 0", 0, (int) res.value);
 
         // Using the raw bytes instead of the enum mnemonics
         byte[] buf3 = {0x05, 0x02, 0x68, (byte) 0xac};
-        res = im.execMethod(buf3);
+        res = im.execMethod("", "main:()V", buf3);
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be -2", -2, (int) res.value);
     }
@@ -60,7 +61,7 @@ public class TestInterp {
     @Test
     public void jump_over_unimpld_opcodes() {
         byte[] buf = {ICONST_1.B(), ICONST_1.B(), IADD.B(), GOTO.B(), (byte) 0, (byte) 1, (byte) 0xff, IRETURN.B()};
-        JVMValue res = im.execMethod(buf);
+        JVMValue res = im.execMethod("", "main:()V", buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
@@ -69,7 +70,7 @@ public class TestInterp {
     @Test
     public void iconst_store_iinc_load() {
         byte[] buf = {ICONST_1.B(), ISTORE.B(), (byte) 1, IINC.B(), (byte) 1, (byte) 1, ILOAD.B(), (byte) 1, IRETURN.B()};
-        JVMValue res = im.execMethod(buf);
+        JVMValue res = im.execMethod("", "main:()V", buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
@@ -88,7 +89,7 @@ public class TestInterp {
         byte[] buf = {ICONST_2.B(), ISTORE.B(), (byte) 1, ILOAD.B(), (byte) 1, IFNE.B(), (byte) 0, (byte) 6,
             IINC.B(), (byte) 1, (byte) 1, ILOAD.B(), (byte) 1, IRETURN.B()};
         System.out.println(Arrays.toString(buf));
-        JVMValue res = im.execMethod(buf);
+        JVMValue res = im.execMethod("", "main:()V", buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
@@ -96,7 +97,7 @@ public class TestInterp {
         byte[] buf2 = {ICONST_2.B(), ISTORE_1.B(), ILOAD_1.B(), IFNE.B(), (byte) 0, (byte) 6,
             IINC.B(), (byte) 1, (byte) 1, ILOAD.B(), (byte) 1, IRETURN.B()};
         System.out.println(Arrays.toString(buf2));
-        res = im.execMethod(buf2);
+        res = im.execMethod("", "main:()V", buf2);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
@@ -106,13 +107,13 @@ public class TestInterp {
     @Test
     public void iconst_dup() {
         byte[] buf = {ICONST_1.B(), DUP.B(), IADD.B(), IRETURN.B()};
-        JVMValue res = im.execMethod(buf);
+        JVMValue res = im.execMethod("", "main:()V", buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
 
         byte[] buf2 = {ICONST_1.B(), DUP.B(), IADD.B(), DUP.B(), IADD.B(), IRETURN.B()};
-        res = im.execMethod(buf2);
+        res = im.execMethod("", "main:()V", buf2);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 4", 4, (int) res.value);
@@ -121,19 +122,34 @@ public class TestInterp {
     @Test
     public void iconst_dup_nop_pop() {
         byte[] buf = {ICONST_1.B(), DUP.B(), NOP.B(), POP.B(), IRETURN.B()};
-        JVMValue res = im.execMethod(buf);
+        JVMValue res = im.execMethod("", "main:()V", buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 1", 1, (int) res.value);
 
         byte[] buf2 = {ICONST_1.B(), DUP.B(), NOP.B(), POP.B(), POP.B(), RETURN.B()};
-        res = im.execMethod(buf2);
+        res = im.execMethod("", "main:()V", buf2);
 
         assertNull("Return should be null", res);
     }
 
+    @Test
+    public void iconst_dup_x1() {
+        byte[] buf = {ICONST_1.B(), ICONST_2.B(), DUP_X1.B(), IADD.B(), IADD.B(), IRETURN.B()};
+        JVMValue res = im.execMethod("", "main:()V", buf);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 2", 5, (int) res.value);
+
+        byte[] buf2 = {ICONST_1.B(), ICONST_2.B(), DUP_X1.B(), IADD.B(), DUP_X1.B(), IADD.B(), IADD.B(), IRETURN.B()};
+        res = im.execMethod("", "main:()V", buf2);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 4", 8, (int) res.value);
+    }
+
     //////////////////////////////////////
-    // 
+    //
     // Simple file-based tests
     @Test
     public void hello_world_loaded_from_file_executes() throws IOException {
@@ -143,7 +159,7 @@ public class TestInterp {
             buf[offset + 4], buf[offset + 5], buf[offset + 6], buf[offset + 7], buf[offset + 8]}; // new byte[9];
         System.out.println(Arrays.toString(tmp));
 
-        assertNull("Hello World should execute", im.execMethod(tmp));
+        assertNull("Hello World should execute", im.execMethod("", "main:()V", tmp));
     }
 
     @Test
@@ -154,7 +170,7 @@ public class TestInterp {
             buf[offset + 4], buf[offset + 5], buf[offset + 6], buf[offset + 7], buf[offset + 8], buf[offset + 9], buf[offset + 10]}; // new byte[11];
         System.out.println(Arrays.toString(tmp));
 
-        JVMValue res = im.execMethod(tmp);
+        JVMValue res = im.execMethod("", "main:()V", tmp);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
