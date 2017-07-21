@@ -1,6 +1,7 @@
 package ocelot;
 
 import java.util.Arrays;
+import ocelot.rt.ClassRepository;
 
 /**
  *
@@ -10,6 +11,8 @@ public final class InterpMain {
 
     private static final Opcode[] table = new Opcode[256];
 
+    private final ClassRepository repo = new ClassRepository();
+    
     static {
         for (Opcode op : Opcode.values()) {
             table[op.getOpcode()] = op;
@@ -26,13 +29,14 @@ public final class InterpMain {
         }
     }
 
-    public JVMValue execMethod(final byte[] instr) {
+    public JVMValue execMethod(String klassName, String desc, final byte[] instr) {
 //         System.out.println(Arrays.toString(table));
         if (instr == null || instr.length == 0)
             return null;
 
         final EvaluationStack eval = new EvaluationStack();
         final LocalVars lvt = new LocalVars(eval);
+        final String currentKlass = klassName;
 
         int current = 0;
         LOOP:
@@ -170,6 +174,12 @@ public final class InterpMain {
                     break;
                 case INEG:
                     eval.ineg();
+                    break;
+                case INVOKESTATIC:
+                    // FIXME
+                    byte[] toExec = repo.lookupInCP(currentKlass, (short)0);
+                    final JVMValue ret = execMethod("", "main:()V", toExec);
+                    eval.push(ret);
                     break;
                 case IOR:
                     eval.ior();

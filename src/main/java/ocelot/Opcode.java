@@ -45,6 +45,7 @@ public enum Opcode {
     ILOAD_1(0x1b),
     ILOAD_2(0x1c),
     ILOAD_3(0x1d),
+    INVOKESTATIC(0xb8, 2),
     INVOKEVIRTUAL(0xb6, 2),
     IRETURN(0xac),
     ISTORE(0x36, 1),
