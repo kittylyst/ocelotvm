@@ -30,7 +30,7 @@ public class TestInterp {
         assertEquals("Return value should be 1", 1, (int)res.value);
 
         byte[] buf1 = {0x05, 0x05, 0x6c, (byte) 0xac};
-        JVMValue res1 = im.execMethod(buf1);
+        res = im.execMethod(buf1);
         assertEquals("Return type is int",  JVMType.I , res.type);
         assertEquals("Return value should be 1", 1, (int)res.value);
 
