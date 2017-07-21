@@ -21,7 +21,21 @@ public class TestInterp {
     // 1.a Ensure that this ends with an opcode from the RETURN family
     // 2. Pass to an InterpMain instance
     // 3. Look at the return value
-    
+
+    @Test
+    public void int_divide_works() {
+        byte[] buf = {ICONST_2.B(), ICONST_2.B(), IDIV.B(), IRETURN.B()};
+        JVMValue res = im.execMethod(buf);
+        assertEquals("Return type is int",  JVMType.I , res.type);
+        assertEquals("Return value should be 1", 1, (int)res.value);
+
+        byte[] buf1 = {0x05, 0x05, 0x6c, (byte) 0xac};
+        JVMValue res1 = im.execMethod(buf1);
+        assertEquals("Return type is int",  JVMType.I , res.type);
+        assertEquals("Return value should be 1", 1, (int)res.value);
+
+    }
+
     @Test
     public void int_arithmetic_works() {
         byte[] buf = {ICONST_1.B(), ICONST_1.B(), IADD.B(), IRETURN.B()};
