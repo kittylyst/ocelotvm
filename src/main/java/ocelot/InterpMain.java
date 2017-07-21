@@ -1,7 +1,5 @@
 package ocelot;
 
-import java.util.Arrays;
-
 /**
  *
  * @author ben
@@ -227,6 +225,9 @@ public final class InterpMain {
                     break;
                 case RETURN:
                     return null;
+                case DUP_X1:
+                    eval.dupX1();
+                    break;
                 default:
                     System.err.println("Saw " + op + " - that can't happen. Stopping.");
                     System.exit(1);

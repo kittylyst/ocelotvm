@@ -74,4 +74,11 @@ public class EvaluationStack extends Stack<JVMValue> {
         push(new JVMValue(JVMType.A, 0L));
     }
 
+    void dupX1() {
+        JVMValue ev1 = pop();
+        JVMValue ev2 = pop();
+        push(ev1.copy());
+        push(ev2);
+        push(ev1);
+    }
 }
