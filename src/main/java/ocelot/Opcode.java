@@ -60,7 +60,8 @@ public enum Opcode {
     POP(0x57),
     POP2(0x58),
     RET(0xa9, 1),
-    RETURN(0xb1);
+    RETURN(0xb1),
+    DUP_X1(0x5a);
 
     public byte numParams() {
         return numParams;

@@ -1,11 +1,13 @@
 package ocelot;
 
-import java.io.IOException;
-import java.util.Arrays;
-import static org.junit.Assert.*;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import static ocelot.Opcode.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  *
@@ -21,7 +23,21 @@ public class TestInterp {
     // 1.a Ensure that this ends with an opcode from the RETURN family
     // 2. Pass to an InterpMain instance
     // 3. Look at the return value
-    
+
+    @Test
+    public void int_divide_works() {
+        byte[] buf = {ICONST_2.B(), ICONST_2.B(), IDIV.B(), IRETURN.B()};
+        JVMValue res = im.execMethod("", "main:()V", buf);
+        assertEquals("Return type is int",  JVMType.I , res.type);
+        assertEquals("Return value should be 1", 1, (int)res.value);
+
+        byte[] buf1 = {0x05, 0x05, 0x6c, (byte) 0xac};
+        JVMValue res1 = im.execMethod("", "main:()V", buf);
+        assertEquals("Return type is int",  JVMType.I , res.type);
+        assertEquals("Return value should be 1", 1, (int)res.value);
+
+    }
+
     @Test
     public void int_arithmetic_works() {
         byte[] buf = {ICONST_1.B(), ICONST_1.B(), IADD.B(), IRETURN.B()};
@@ -116,6 +132,21 @@ public class TestInterp {
         res = im.execMethod("", "main:()V", buf2);
 
         assertNull("Return should be null", res);
+    }
+
+    @Test
+    public void iconst_dup_x1() {
+        byte[] buf = {ICONST_1.B(), ICONST_2.B(), DUP_X1.B(), IADD.B(), IADD.B(), IRETURN.B()};
+        JVMValue res = im.execMethod("", "main:()V", buf);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 2", 5, (int) res.value);
+
+        byte[] buf2 = {ICONST_1.B(), ICONST_2.B(), DUP_X1.B(), IADD.B(), DUP_X1.B(), IADD.B(), IADD.B(), IRETURN.B()};
+        res = im.execMethod("", "main:()V", buf);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 4", 8, (int) res.value);
     }
 
     //////////////////////////////////////
