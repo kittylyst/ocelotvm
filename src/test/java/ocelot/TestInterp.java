@@ -1,11 +1,13 @@
 package ocelot;
 
-import java.io.IOException;
-import java.util.Arrays;
-import static org.junit.Assert.*;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import static ocelot.Opcode.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  *
@@ -130,6 +132,21 @@ public class TestInterp {
         res = im.execMethod(buf2);
 
         assertNull("Return should be null", res);
+    }
+
+    @Test
+    public void iconst_dup_x1() {
+        byte[] buf = {ICONST_1.B(), ICONST_2.B(), DUP_X1.B(), IADD.B(), IADD.B(), IRETURN.B()};
+        JVMValue res = im.execMethod(buf);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 2", 5, (int) res.value);
+
+        byte[] buf2 = {ICONST_1.B(), ICONST_2.B(), DUP_X1.B(), IADD.B(), DUP_X1.B(), IADD.B(), IADD.B(), IRETURN.B()};
+        res = im.execMethod(buf2);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 4", 8, (int) res.value);
     }
 
     //////////////////////////////////////
