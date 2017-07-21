@@ -21,7 +21,7 @@ public class ClassRepository {
 
     private static final ConcurrentMap<String, JVMTypeMetadata> loadedClasses = new ConcurrentHashMap<>();
 
-    private ClassRepository() {
+    public ClassRepository() {
     }
 
     // TEST: Put Object & String in the cache
@@ -37,13 +37,8 @@ public class ClassRepository {
         return loadedClasses.get(toCreate);
     }
 
-    public static String lookupConstantPool(String currentClass, short entry) {
-        assert "LMain;".equals(currentClass);
-        assert (entry == 0) || (entry == 1);
-        if (entry == 0) {
-            return OBJSIG;
-        }
-        return STRSIG;
+    public byte[] lookupInCP(final String currentClass, short entry) {
+        return new byte[0];
     }
 
 }
