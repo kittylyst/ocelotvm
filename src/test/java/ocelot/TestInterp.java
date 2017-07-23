@@ -6,8 +6,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import static ocelot.Opcode.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -32,7 +31,7 @@ public class TestInterp {
         assertEquals("Return value should be 1", 1, (int)res.value);
 
         byte[] buf1 = {0x05, 0x05, 0x6c, (byte) 0xac};
-        JVMValue res1 = im.execMethod("", "main:()V", buf);
+        res = im.execMethod("", "main:()V", buf1);
         assertEquals("Return type is int",  JVMType.I , res.type);
         assertEquals("Return value should be 1", 1, (int)res.value);
 
@@ -143,14 +142,14 @@ public class TestInterp {
         assertEquals("Return value should be 2", 5, (int) res.value);
 
         byte[] buf2 = {ICONST_1.B(), ICONST_2.B(), DUP_X1.B(), IADD.B(), DUP_X1.B(), IADD.B(), IADD.B(), IRETURN.B()};
-        res = im.execMethod("", "main:()V", buf);
+        res = im.execMethod("", "main:()V", buf2);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 4", 8, (int) res.value);
     }
 
     //////////////////////////////////////
-    // 
+    //
     // Simple file-based tests
     @Test
     public void hello_world_loaded_from_file_executes() throws IOException {
