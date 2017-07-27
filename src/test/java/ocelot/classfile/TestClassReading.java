@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import ocelot.InterpMain;
+import ocelot.JVMType;
+import ocelot.JVMValue;
 import ocelot.Utils;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -122,9 +124,13 @@ public class TestClassReading {
         ClassRepository repo = new ClassRepository();
         repo.add(ce);
         InterpMain im = new InterpMain(repo);
-        
-        OcelotClass.CPMethod meth = ce.getMethodByName("main:([Ljava/lang/String;)V");
-        im.execMethod(meth);
+
+        OcelotClass.CPMethod meth = ce.getMethodByName("foo:()I"); // "main:([Ljava/lang/String;)V"
+        JVMValue res = im.execMethod(meth);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 9", 9, (int) res.value);
+
     }
 
 }

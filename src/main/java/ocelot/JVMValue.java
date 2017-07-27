@@ -8,8 +8,8 @@ package ocelot;
  * @author ben
  */
 public class JVMValue {
-    final JVMType type;
-    final long value;
+    public final JVMType type;
+    public final long value;
 
     JVMValue(JVMType t, long bits) {
         this.type = t;

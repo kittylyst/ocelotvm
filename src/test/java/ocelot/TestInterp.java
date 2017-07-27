@@ -2,12 +2,13 @@ package ocelot;
 
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 import static ocelot.Opcode.*;
+import ocelot.classfile.OcelotClass;
 import ocelot.rt.ClassRepository;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.Ignore;
 
 /**
@@ -17,6 +18,13 @@ import org.junit.Ignore;
 public class TestInterp {
 
     private static InterpMain im = new InterpMain(new ClassRepository());
+
+    ClassRepository repo = new ClassRepository();
+
+    @Before
+    public void init() {
+        repo = new ClassRepository();
+    }
 
     // General form of a simple test case should be:
     //
@@ -171,28 +179,43 @@ public class TestInterp {
     //
     // Simple file-based tests
     @Test
-    public void hello_world_loaded_from_file_executes() throws IOException {
-        byte[] buf = Utils.pullBytes("Println.class");
-        int offset = 481; // Harcoded / hand-figured out
-        byte[] tmp = {buf[offset], buf[offset + 1], buf[offset + 2], buf[offset + 3],
-            buf[offset + 4], buf[offset + 5], buf[offset + 6], buf[offset + 7], buf[offset + 8]}; // new byte[9];
-        System.out.println(Arrays.toString(tmp));
+    public void hello_world_loaded_from_file_executes() throws Exception {
+//        byte[] buf = Utils.pullBytes("Println.class");
+//        int offset = 481; // Harcoded / hand-figured out
+//        byte[] tmp = {buf[offset], buf[offset + 1], buf[offset + 2], buf[offset + 3],
+//            buf[offset + 4], buf[offset + 5], buf[offset + 6], buf[offset + 7], buf[offset + 8]}; // new byte[9];
+//        System.out.println(Arrays.toString(tmp));
 
-        assertNull("Hello World should execute", im.execMethod("", "main:()V", tmp));
+        String fName = "Println.class";
+        byte[] buf = Utils.pullBytes(fName);
+        OcelotClass ce = OcelotClass.of(buf, fName);
+
+        repo.add(ce);
+        im = new InterpMain(repo);
+
+        OcelotClass.CPMethod meth = ce.getMethodByName("main:([Ljava/lang/String;)V");
+
+        assertNull("Hello World should execute", im.execMethod(meth));
     }
 
     @Test
-    public void simple_branching_executes() throws IOException {
-        byte[] buf = Utils.pullBytes("optjava/bc/SimpleTests.class");
-        int offset = 330; // Harcoded / hand-figured out
-        byte[] tmp = {buf[offset], buf[offset + 1], buf[offset + 2], buf[offset + 3],
-            buf[offset + 4], buf[offset + 5], buf[offset + 6], buf[offset + 7], buf[offset + 8], buf[offset + 9], buf[offset + 10]}; // new byte[11];
-        System.out.println(Arrays.toString(tmp));
+    public void simple_branching_executes() throws Exception {
+        String fName = "optjava/bc/SimpleTests.class";
+        byte[] buf = Utils.pullBytes(fName);
+        OcelotClass ce = OcelotClass.of(buf, fName);
 
-        JVMValue res = im.execMethod("", "main:()V", tmp);
+        repo.add(ce);
+        im = new InterpMain(repo);
+
+        OcelotClass.CPMethod meth = ce.getMethodByName("if_bc:()I");
+        JVMValue res = im.execMethod(meth);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
+//        int offset = 330; // Harcoded / hand-figured out
+//        byte[] tmp = {buf[offset], buf[offset + 1], buf[offset + 2], buf[offset + 3],
+//            buf[offset + 4], buf[offset + 5], buf[offset + 6], buf[offset + 7], buf[offset + 8], buf[offset + 9], buf[offset + 10]}; // new byte[11];
+//        System.out.println(Arrays.toString(tmp));
     }
 
 }
