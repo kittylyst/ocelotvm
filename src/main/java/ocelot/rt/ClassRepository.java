@@ -7,6 +7,8 @@ package ocelot.rt;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import ocelot.classfile.CPEntry;
+import ocelot.classfile.OcelotClass;
 
 /**
  * Holds all the loaded classes to date. Operations should be concurrent safe so
@@ -21,6 +23,9 @@ public class ClassRepository {
 
     private static final ConcurrentMap<String, JVMTypeMetadata> loadedClasses = new ConcurrentHashMap<>();
 
+    private final ConcurrentMap<String, OcelotClass> loadedOcClz = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, OcelotClass.CPMethod> methodCache = new ConcurrentHashMap<>();
+    
     public ClassRepository() {
     }
 
@@ -37,8 +42,20 @@ public class ClassRepository {
         return loadedClasses.get(toCreate);
     }
 
-    public byte[] lookupInCP(final String currentClass, short entry) {
-        return new byte[0];
+    public OcelotClass.CPMethod lookupInCP(final String clzName, short entry) {
+        OcelotClass clz = loadedOcClz.get(clzName);
+        CPEntry cpe = clz.getCPEntry(entry);
+        String methName = clz.resolveAsString(cpe.getIndex());
+        return methodCache.get(methName);
+        // FIXME Fully qualified name... 
+//        return clz.getMethodByName(methName);
+    }
+
+    public void add(OcelotClass ce) {
+        loadedOcClz.put(ce.className(), ce);
+        for (OcelotClass.CPMethod m : ce.getMethods()) {
+            methodCache.put(m.getClassName() +"."+ m.getNameAndType(), m);
+        }
     }
 
 }

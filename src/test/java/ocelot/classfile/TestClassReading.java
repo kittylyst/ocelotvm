@@ -8,6 +8,7 @@ import ocelot.Utils;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import static ocelot.classfile.CPType.*;
+import ocelot.rt.ClassRepository;
 
 /**
  *
@@ -15,14 +16,14 @@ import static ocelot.classfile.CPType.*;
  */
 public class TestClassReading {
 
-    private OcelotClassReader ce;
+    private OcelotClass ce;
     private byte[] buf;
 
     @Test
     public void check_cp_for_hello_world() throws IOException, ClassNotFoundException {
         String fName = "Println.class";
         buf = Utils.pullBytes(fName);
-        ce = new OcelotClassReader(buf, fName);
+        ce = new OcelotClass(buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
         assertEquals("Minor version should be 0", 0, ce.getMinor());
@@ -58,10 +59,10 @@ public class TestClassReading {
     }
 
     @Test
-    public void check_simple_fields() throws IOException, ClassNotFoundException {
+    public void check_simple_fields_methods() throws IOException, ClassNotFoundException {
         String fName = "octest/SimpleFieldsAndMethods.class";
-        byte[] buf = Utils.pullBytes(fName);
-        ce = new OcelotClassReader(buf, fName);
+        buf = Utils.pullBytes(fName);
+        ce = new OcelotClass(buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
         assertEquals("Minor version should be 0", 0, ce.getMinor());
@@ -74,7 +75,7 @@ public class TestClassReading {
         assertFalse(fName + " should not be annotation", ce.isAnnotation());
 
         ce.parseFields();
-        List<OcelotClassReader.CPField> fields = ce.getFields();
+        List<OcelotClass.CPField> fields = ce.getFields();
         assertEquals(fName + " should have 1 field", 1, fields.size());
         int idx = fields.get(0).getNameIndex();
         assertEquals(fName + " should have a field called a", "a", ce.getCPEntry(idx).getStr());
@@ -82,9 +83,9 @@ public class TestClassReading {
         assertEquals(fName + " should have a field called a of type I", "I", ce.getCPEntry(idx).getStr());
 
         ce.parseMethods();
-        List<OcelotClassReader.CPMethod> methods = ce.getMethods();
+        List<OcelotClass.CPMethod> methods = ce.getMethods();
         assertEquals(fName + " should have 2 methods", 2, methods.size());
-        OcelotClassReader.CPMethod init = methods.get(0);
+        OcelotClass.CPMethod init = methods.get(0);
         idx = init.getNameIndex();
         assertEquals(fName + " should have a method called <init>", "<init>", ce.getCPEntry(idx).getStr());
         idx = init.getDescIndex();
@@ -93,6 +94,37 @@ public class TestClassReading {
         System.out.println(Arrays.toString(b));
 //        InterpMain im = new InterpMain();
 //        im.execMethod(b);
+    }
+
+    @Test
+    public void check_names() throws IOException, ClassNotFoundException {
+        String fName = "Println.class";
+        buf = Utils.pullBytes(fName);
+        ce = new OcelotClass(buf, fName);
+        ce.parse();
+        String clzName = ce.className();
+        assertEquals("kathik/Println", clzName);
+
+        fName = "octest/SimpleFieldsAndMethods.class";
+        buf = Utils.pullBytes(fName);
+        ce = new OcelotClass(buf, fName);
+        ce.parse();
+        clzName = ce.className();
+        assertEquals("octest/SimpleFieldsAndMethods", clzName);
+    }
+
+    @Test
+    public void simple_invoke() throws Exception {
+        String fName = "SampleInvoke.class";
+        buf = Utils.pullBytes(fName);
+        ce = new OcelotClass(buf, fName);
+        ce.parse();
+        ClassRepository repo = new ClassRepository();
+        repo.add(ce);
+        InterpMain im = new InterpMain(repo);
+        
+        OcelotClass.CPMethod meth = ce.getMethodByName("main:([Ljava/lang/String;)V");
+        im.execMethod(meth);
     }
 
 }

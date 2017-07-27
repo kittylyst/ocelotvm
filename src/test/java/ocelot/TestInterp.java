@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import static ocelot.Opcode.*;
+import ocelot.rt.ClassRepository;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 /**
  *
@@ -14,7 +16,7 @@ import static org.junit.Assert.*;
  */
 public class TestInterp {
 
-    private static InterpMain im = new InterpMain();
+    private static InterpMain im = new InterpMain(new ClassRepository());
 
     // General form of a simple test case should be:
     //
@@ -22,18 +24,17 @@ public class TestInterp {
     // 1.a Ensure that this ends with an opcode from the RETURN family
     // 2. Pass to an InterpMain instance
     // 3. Look at the return value
-
     @Test
     public void int_divide_works() {
         byte[] buf = {ICONST_2.B(), ICONST_2.B(), IDIV.B(), IRETURN.B()};
         JVMValue res = im.execMethod("", "main:()V", buf);
-        assertEquals("Return type is int",  JVMType.I , res.type);
-        assertEquals("Return value should be 1", 1, (int)res.value);
+        assertEquals("Return type is int", JVMType.I, res.type);
+        assertEquals("Return value should be 1", 1, (int) res.value);
 
         byte[] buf1 = {0x05, 0x05, 0x6c, (byte) 0xac};
         res = im.execMethod("", "main:()V", buf1);
-        assertEquals("Return type is int",  JVMType.I , res.type);
-        assertEquals("Return value should be 1", 1, (int)res.value);
+        assertEquals("Return type is int", JVMType.I, res.type);
+        assertEquals("Return value should be 1", 1, (int) res.value);
 
     }
 
@@ -146,6 +147,24 @@ public class TestInterp {
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 4", 8, (int) res.value);
+    }
+
+    @Test
+    @Ignore
+    public void TestIntIfEqPrim() {
+        InterpMain vm = new InterpMain(new ClassRepository());
+        byte[] buffy = {ICONST_1.B(), ICONST_1.B(), IADD.B(), ICONST_2.B(), IF_ICMPEQ.B(), (byte) 0, (byte) 11, ICONST_4.B(), GOTO.B(), (byte) 0, (byte) 12, ICONST_3.B(), IRETURN.B()};
+
+        JVMValue res = vm.execMethod("", "main:()V", buffy);
+
+        assertEquals(JVMType.I, res.type);
+        assertEquals(2, ((int) res.value));
+
+        byte[] buffy2 = {ICONST_1.B(), ICONST_1.B(), IADD.B(), ICONST_3.B(), IF_ICMPEQ.B(), (byte) 0, (byte) 11, ICONST_4.B(), GOTO.B(), (byte) 0, (byte) 12, ICONST_3.B(), IRETURN.B()};
+        res = vm.execMethod("", "main:()V", buffy2);
+
+        assertEquals(JVMType.I, res.type);
+        assertEquals(2, ((int) res.value));
     }
 
     //////////////////////////////////////

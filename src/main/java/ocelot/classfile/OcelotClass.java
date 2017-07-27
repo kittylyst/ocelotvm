@@ -5,16 +5,14 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import org.objectweb.asm.ClassReader;
 
 /**
  *
  * @author ben
  */
-public final class OcelotClassReader {
+public final class OcelotClass {
 
     private final byte[] clzBytes;
     private final String filename;
@@ -33,7 +31,10 @@ public final class OcelotClassReader {
     private int[] interfaces;
     private CPField[] fields;
     private CPMethod[] methods;
+    private CPAttr[] attributes;
 
+    private final Map<String, CPMethod> methLookup = new HashMap<>();
+    
     public static final int ACC_PUBLIC = 0x0001;      // Declared public; may be accessed from outside its package.
     public static final int ACC_PRIVATE = 0x0002;      // Declared private; usable only within the defining class.
     public static final int ACC_PROTECTED = 0x0004;      // Declared protected; may be accessed within subclasses.
@@ -56,8 +57,9 @@ public final class OcelotClassReader {
     public static final int ACC_NATIVE = 0x0100;       // (Method) Declared native; implemented in a language other than Java.
     public static final int ACC_ABSTRACT_M = 0x0400;       // (Method) Declared abstract; no implementation is provided.
     public static final int ACC_STRICT = 0x0800;       // (Method) Declared strictfp; floating-point mode is FP-strict.
+    
 
-    public OcelotClassReader(byte[] buf, String fName) {
+    OcelotClass(byte[] buf, String fName) {
         filename = fName;
         clzBytes = buf;
     }
@@ -78,7 +80,23 @@ public final class OcelotClassReader {
         }
     }
 
-    public void parseHeader() {
+    void parse() throws ClassNotFoundException {
+        current = 0;
+        parseHeader();
+        parseConstantPool();
+        parseBasicTypeInfo();
+        parseFields();
+        parseMethods();
+//        parseAttributes();
+    }
+
+    public static OcelotClass of(byte[] buf, String fName) throws ClassNotFoundException {
+        OcelotClass out = new OcelotClass(buf, fName);
+        out.parse();
+        return out;
+    }
+
+    void parseHeader() {
         if ((clzBytes[current++] != (byte) 0xca) || (clzBytes[current++] != (byte) 0xfe)
                 || (clzBytes[current++] != (byte) 0xba) || (clzBytes[current++] != (byte) 0xbe)) {
             throw new IllegalArgumentException("Input file does not have correct magic number");
@@ -88,7 +106,7 @@ public final class OcelotClassReader {
         poolItemCount = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
     }
 
-    public void parseConstantPool() throws ClassNotFoundException {
+    void parseConstantPool() throws ClassNotFoundException {
         items = new CPEntry[poolItemCount - 1];
         for (int i = 0; i < poolItemCount - 1; i++) {
             int entry = clzBytes[current++] & 0xff;
@@ -155,7 +173,7 @@ public final class OcelotClassReader {
         }
     }
 
-    public void parseBasicTypeInfo() {
+    void parseBasicTypeInfo() {
         flags = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
         thisClzIndex = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
         superClzIndex = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
@@ -167,7 +185,7 @@ public final class OcelotClassReader {
         }
     }
 
-    public void parseFields() {
+    void parseFields() {
         int fCount = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
 
         this.fields = new CPField[fCount];
@@ -188,8 +206,12 @@ public final class OcelotClassReader {
 
     }
 
-    class CPBase {
+    public CPMethod getMethodByName(String nameAndType) {
+        return methLookup.get(nameAndType);
+    }
 
+    class CPBase {
+        protected final String className;
         protected int flags;
         protected int nameIndex;
         protected int descIndex;
@@ -200,6 +222,7 @@ public final class OcelotClassReader {
             nameIndex = name_idx;
             descIndex = desc_idx;
             attrs = new CPAttr[attrCount];
+            className = OcelotClass.this.className();
         }
 
         public int getFlags() {
@@ -218,12 +241,16 @@ public final class OcelotClassReader {
             return attrs;
         }
 
+        public String getClassName() {
+            return className;
+        }
+        
         public void setAttr(int i, CPAttr attr) {
             attrs[i] = attr;
         }
     }
 
-    class CPField extends CPBase {
+    public class CPField extends CPBase {
 
         public CPField(int fFlags, int name_idx, int desc_idx, int attrCount) {
             super(fFlags, name_idx, desc_idx, attrCount);
@@ -236,11 +263,13 @@ public final class OcelotClassReader {
 
     }
 
-    class CPMethod extends CPBase {
+    public class CPMethod extends CPBase {
         private byte[] buf;
-        
-        CPMethod(int mFlags, int name_idx, int desc_idx, int attrCount) {
-            super(mFlags, name_idx, desc_idx, attrCount);
+        private final String nameAndType;
+
+        CPMethod(int mFlags, int nameIdx, int descIdx, int attrCount) {
+            super(mFlags, nameIdx, descIdx, attrCount);
+            nameAndType = OcelotClass.this.resolveAsString(nameIndex) +":"+ OcelotClass.this.resolveAsString(descIndex);
         }
 
         @Override
@@ -255,25 +284,46 @@ public final class OcelotClassReader {
         public byte[] getBuf() {
             return buf;
         }
+
+        public String getNameAndType() {
+            return nameAndType;
+        }
     }
 
-    public void parseMethods() {
+    void parseMethods() {
         int mCount = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
         methods = new CPMethod[mCount];
-        CPMethod m = null;
 
         for (int idx = 0; idx < mCount; idx++) {
             int mFlags = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
             int name_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
             int desc_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
             int attrs_count = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-            m = new CPMethod(mFlags, name_idx, desc_idx, attrs_count);
+            CPMethod m = new CPMethod(mFlags, name_idx, desc_idx, attrs_count);
 
             for (int aidx = 0; aidx < m.getAttrs().length; aidx++) {
                 m.setAttr(aidx, parseAttribute(m));
             }
 
             methods[idx] = m;
+        }
+        for (CPMethod m : methods) {
+            methLookup.put(m.getNameAndType(), m);
+        }
+    }
+
+    void parseAttributes() {
+        int attributes_count = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+        attributes = new CPAttr[attributes_count];
+
+        for (int aidx = 0; aidx < attributes_count; aidx++) {
+            int mFlags = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+            int name_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+            int desc_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+            int attrs_count = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+            CPBase b = new CPBase(mFlags, name_idx, desc_idx, attrs_count);
+            
+            attributes[aidx] = parseAttribute(b);
         }
 
     }
@@ -428,6 +478,10 @@ public final class OcelotClassReader {
         return getCPEntry(superClzIndex);
     }
 
+    public String className() {
+        return resolveAsString(thisClzIndex);
+    }
+    
     public String resolveAsString(int i) {
         final CPEntry top = items[i - 1];
 
@@ -463,18 +517,18 @@ public final class OcelotClassReader {
 
     @Override
     public String toString() {
-        return "ClassEntry{" + "file_name=" + filename + ", major=" + major + ", minor=" + minor + ", poolItems=" + poolItemCount + '}';
+        return "OcelotClass{" + "filename=" + filename + ", major=" + major + ", minor=" + minor + ", poolItemCount=" + poolItemCount + ", flags=" + flags + ", thisClzIndex=" + thisClzIndex + ", superClzIndex=" + superClzIndex + ", items=" + items + ", interfaces=" + interfaces + ", fields=" + fields + ", methods=" + methods + ", attributes=" + attributes + '}';
     }
-
+    
     // Maybe some useful techniques in ASM ?
-    public OcelotClassReader scan(String cName) throws IOException {
+    public OcelotClass scan(String cName) throws IOException {
         final Path clzPath = classNameToPath(cName);
         final byte[] buf = Files.readAllBytes(clzPath);
-        OcelotClassReader out = null;
+        OcelotClass out = null;
         try (final InputStream in = Files.newInputStream(clzPath)) {
             try {
                 final ClassReader cr = new ClassReader(in);
-                out = new OcelotClassReader(buf, clzPath.toString());
+                out = new OcelotClass(buf, clzPath.toString());
             } catch (Exception e) {
                 throw new IOException("Could not read class file " + clzPath, e);
             }

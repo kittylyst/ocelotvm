@@ -1,6 +1,7 @@
 package ocelot;
 
 import java.util.Arrays;
+import ocelot.classfile.OcelotClass;
 import ocelot.rt.ClassRepository;
 
 /**
@@ -11,7 +12,12 @@ public final class InterpMain {
 
     private static final Opcode[] table = new Opcode[256];
 
-    private final ClassRepository repo = new ClassRepository();
+    private final ClassRepository repo;
+    
+    
+    public InterpMain(ClassRepository classes) {
+        repo = classes;
+    }
     
     static {
         for (Opcode op : Opcode.values()) {
@@ -29,8 +35,11 @@ public final class InterpMain {
         }
     }
 
+    public JVMValue execMethod(OcelotClass.CPMethod meth) {
+        return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBuf());
+    }
+    
     public JVMValue execMethod(String klassName, String desc, final byte[] instr) {
-//         System.out.println(Arrays.toString(table));
         if (instr == null || instr.length == 0)
             return null;
 
@@ -48,7 +57,7 @@ public final class InterpMain {
                 System.exit(1);
             }
             byte num = op.numParams();
-            JVMValue v;
+            JVMValue v, v2;
             int jumpTo;
             switch (op) {
                 case ACONST_NULL:
@@ -71,6 +80,9 @@ public final class InterpMain {
                     break;
                 case ASTORE_1:
                     lvt.astore((byte) 1);
+                    break;
+                case BIPUSH:
+                    eval.iconst((int)instr[current++]);
                     break;
                 case DUP:
                     eval.dup();
@@ -108,6 +120,14 @@ public final class InterpMain {
                     break;
                 case IDIV:
                     eval.idiv();
+                    break;
+                case IF_ICMPEQ:
+                    v = eval.pop();
+                    v2 = eval.pop();
+                    jumpTo = ((int) instr[current++] << 8) + (int) instr[current++];
+                    if (v.value == v2.value) {
+                        current += jumpTo - 1; // The -1 is necessary as we've already inc'd current
+                    }
                     break;
                 case IFEQ:
                     v = eval.pop();
@@ -177,8 +197,9 @@ public final class InterpMain {
                     break;
                 case INVOKESTATIC:
                     // FIXME
-                    byte[] toExec = repo.lookupInCP(currentKlass, (short)0);
-                    final JVMValue ret = execMethod("", "main:()V", toExec);
+                    int lookup = ((int) instr[current++] << 8) + (int) instr[current++];
+                    OcelotClass.CPMethod meth = repo.lookupInCP(currentKlass, (short)lookup);
+                    final JVMValue ret = execMethod(meth);
                     eval.push(ret);
                     break;
                 case IOR:
