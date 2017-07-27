@@ -143,7 +143,7 @@ public class TestInterp {
         assertEquals("Return value should be 2", 5, (int) res.value);
 
         byte[] buf2 = {ICONST_1.B(), ICONST_2.B(), DUP_X1.B(), IADD.B(), DUP_X1.B(), IADD.B(), IADD.B(), IRETURN.B()};
-        res = im.execMethod("", "main:()V", buf);
+        res = im.execMethod("", "main:()V", buf2);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 4", 8, (int) res.value);
