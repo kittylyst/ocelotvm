@@ -26,24 +26,36 @@ public final class LocalVars {
     }
 
     void iload(byte b) {
-        JVMValue v = vars[b & 0xff].copy();
-        // Type-check...
-        stack.push(v);
+        load(b, I);
     }
 
     void istore(byte b) {
-        JVMValue val = stack.pop();
-        // Type-check...
-        vars[b & 0xff] = val;
+        store(b, I);
     }
 
     void aload(byte b) {
-        JVMValue v = vars[b & 0xff].copy();
-        // Type-check...
-        stack.push(v);
+        load(b, A);
     }
 
     void astore(byte b) {
+        store(b, A);
+    }
+
+    void dload(byte b) {
+        load(b, D);
+    }
+
+    void dstore(byte b) {
+        store(b, D);
+    }
+
+    private void load(byte b, JVMType type) {
+        JVMValue v = vars[b & 0xff].copy();
+        // FIXME Type-check
+        stack.push(v);
+    }
+
+    private void store(byte b, JVMType type) {
         JVMValue val = stack.pop();
         // FIXME Type-check
         vars[b & 0xff] = val;
