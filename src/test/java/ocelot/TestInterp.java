@@ -96,6 +96,14 @@ public class TestInterp {
     }
 
     @Test
+    public void double_subtract_works() {
+        byte[] buf = {DCONST_1.B(), DCONST_1.B(), DSUB.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.D, res.type);
+        assertEquals("Return value is 0.0", 0.0d, Double.longBitsToDouble(res.value), 0.0);
+    }
+
+    @Test
     public void double_multiply_works() {
         byte[] buf = {DCONST_1.B(), DCONST_1.B(), DMUL.B(), DRETURN.B()};
         JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);

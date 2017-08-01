@@ -134,6 +134,9 @@ public final class InterpMain {
                 case DSTORE_3:
                     lvt.dstore((byte) 3);
                     break;
+                case DSUB:
+                    eval.dsub();
+                    break;
                 case DUP:
                     eval.dup();
                     break;

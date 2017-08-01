@@ -89,8 +89,11 @@ public class EvaluationStack extends Stack<JVMValue> {
         push(new JVMValue(JVMType.D, Double.doubleToLongBits(add)));
     }
 
-    public void dconst(double d) {
-        push(new JVMValue(JVMType.D, Double.doubleToLongBits(d)));
+    public void dsub() {
+        JVMValue ev1 = pop();
+        JVMValue ev2 = pop();
+        double sub = Double.longBitsToDouble(ev1.value) - Double.longBitsToDouble(ev2.value);
+        push(new JVMValue(JVMType.D, Double.doubleToLongBits(sub)));
     }
 
     public void ddiv() {
@@ -99,7 +102,7 @@ public class EvaluationStack extends Stack<JVMValue> {
         double div = Double.longBitsToDouble(ev1.value) / Double.longBitsToDouble(ev2.value);
         push(new JVMValue(JVMType.D, Double.doubleToLongBits(div)));
     }
-
+    
     public void dmul() {
         JVMValue ev1 = pop();
         JVMValue ev2 = pop();
@@ -110,5 +113,9 @@ public class EvaluationStack extends Stack<JVMValue> {
     public void dneg() {
         JVMValue ev = pop();
         push(new JVMValue(ev.type, ev.value ^ 0x8000000000000000L));
+    }
+
+    public void dconst(double d) {
+        push(new JVMValue(JVMType.D, Double.doubleToLongBits(d)));
     }
 }
