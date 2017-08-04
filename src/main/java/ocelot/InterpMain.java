@@ -84,6 +84,68 @@ public final class InterpMain {
                 case BIPUSH:
                     eval.iconst((int)instr[current++]);
                     break;
+                case DADD:
+                    eval.dadd();
+                    break;
+                case DCMPG:
+                    eval.dcmpg();
+                    break;
+                case DCMPL:
+                    eval.dcmpl();
+                    break;
+                case DCONST_0:
+                    eval.dconst(0.0);
+                    break;
+                case DCONST_1:
+                    eval.dconst(1.0);
+                    break;
+                case DDIV:
+                    eval.ddiv();
+                    break;
+                case DLOAD:
+                    lvt.dload(instr[current++]);
+                    break;
+                case DLOAD_0:
+                    lvt.dload((byte) 0);
+                    break;
+                case DLOAD_1:
+                    lvt.dload((byte) 1);
+                    break;
+                case DLOAD_2:
+                    lvt.dload((byte) 2);
+                    break;
+                case DLOAD_3:
+                    lvt.dload((byte) 3);
+                    break;
+                case DMUL:
+                    eval.dmul();
+                    break;
+                case DNEG:
+                    eval.dneg();
+                    break;
+                case DREM:
+                    eval.drem();
+                    break;
+                case DRETURN:
+                    return eval.pop();
+                case DSTORE:
+                    lvt.dstore(instr[current++]);
+                    break;
+                case DSTORE_0:
+                    lvt.dstore((byte) 0);
+                    break;
+                case DSTORE_1:
+                    lvt.dstore((byte) 1);
+                    break;
+                case DSTORE_2:
+                    lvt.dstore((byte) 2);
+                    break;
+                case DSTORE_3:
+                    lvt.dstore((byte) 3);
+                    break;
+                case DSUB:
+                    eval.dsub();
+                    break;
                 case DUP:
                     eval.dup();
                     break;

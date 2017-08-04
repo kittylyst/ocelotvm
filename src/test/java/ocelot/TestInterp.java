@@ -17,6 +17,8 @@ import org.junit.Ignore;
  */
 public class TestInterp {
 
+    public static final String MAIN_METHOD_DESC = "main:()V";
+    
     private static InterpMain im = new InterpMain(new ClassRepository());
 
     ClassRepository repo = new ClassRepository();
@@ -35,12 +37,12 @@ public class TestInterp {
     @Test
     public void int_divide_works() {
         byte[] buf = {ICONST_2.B(), ICONST_2.B(), IDIV.B(), IRETURN.B()};
-        JVMValue res = im.execMethod("", "main:()V", buf);
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
         assertEquals("Return type is int", JVMType.I, res.type);
         assertEquals("Return value should be 1", 1, (int) res.value);
 
         byte[] buf1 = {0x05, 0x05, 0x6c, (byte) 0xac};
-        res = im.execMethod("", "main:()V", buf1);
+        res = im.execMethod("", MAIN_METHOD_DESC, buf1);
         assertEquals("Return type is int", JVMType.I, res.type);
         assertEquals("Return value should be 1", 1, (int) res.value);
 
@@ -49,20 +51,20 @@ public class TestInterp {
     @Test
     public void int_arithmetic_works() {
         byte[] buf = {ICONST_1.B(), ICONST_1.B(), IADD.B(), IRETURN.B()};
-        JVMValue res = im.execMethod("", "main:()V", buf);
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
 
         // Using the raw bytes instead of the enum mnemonics
         byte[] buf2 = {0x04, 0x02, 0x60, (byte) 0xac};
-        res = im.execMethod("", "main:()V", buf2);
+        res = im.execMethod("", MAIN_METHOD_DESC, buf2);
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 0", 0, (int) res.value);
 
         // Using the raw bytes instead of the enum mnemonics
         byte[] buf3 = {0x05, 0x02, 0x68, (byte) 0xac};
-        res = im.execMethod("", "main:()V", buf3);
+        res = im.execMethod("", MAIN_METHOD_DESC, buf3);
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be -2", -2, (int) res.value);
     }
@@ -70,7 +72,7 @@ public class TestInterp {
     @Test
     public void jump_over_unimpld_opcodes() {
         byte[] buf = {ICONST_1.B(), ICONST_1.B(), IADD.B(), GOTO.B(), (byte) 0, (byte) 1, (byte) 0xff, IRETURN.B()};
-        JVMValue res = im.execMethod("", "main:()V", buf);
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
@@ -79,10 +81,119 @@ public class TestInterp {
     @Test
     public void iconst_store_iinc_load() {
         byte[] buf = {ICONST_1.B(), ISTORE.B(), (byte) 1, IINC.B(), (byte) 1, (byte) 1, ILOAD.B(), (byte) 1, IRETURN.B()};
-        JVMValue res = im.execMethod("", "main:()V", buf);
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
+    }
+
+    @Test
+    public void double_add_works() {
+        byte[] buf = {DCONST_1.B(), DCONST_1.B(), DADD.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.D, res.type);
+        assertEquals("Return value is 2.0", 2.0d, Double.longBitsToDouble(res.value), 0.0);
+    }
+
+    @Test
+    public void double_subtract_works() {
+        byte[] buf = {DCONST_1.B(), DCONST_1.B(), DSUB.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.D, res.type);
+        assertEquals("Return value is 0.0", 0.0d, Double.longBitsToDouble(res.value), 0.0);
+    }
+
+    @Test
+    public void double_multiply_works() {
+        byte[] buf = {DCONST_1.B(), DCONST_1.B(), DMUL.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.D, res.type);
+        assertEquals("Return value is 1.0", 1.0d, Double.longBitsToDouble(res.value), 0.0);
+    }
+
+    @Test
+    public void double_divide_works() {
+        byte[] buf = {DCONST_1.B(), DCONST_1.B(), DDIV.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.D, res.type);
+        assertEquals("Return value is 1.0", 1.0d, Double.longBitsToDouble(res.value), 0.0);
+    }
+
+    @Test
+    public void double_negative_works() {
+        byte[] buf = {DCONST_1.B(), DNEG.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.D, res.type);
+        assertEquals("Return value is -1.0", -1.0d, Double.longBitsToDouble(res.value), 0.0);
+
+        byte[] buf2 = {DCONST_1.B(), DNEG.B(), DNEG.B(), DRETURN.B()};
+        JVMValue res2 = im.execMethod("", MAIN_METHOD_DESC, buf2);
+        assertEquals("Return type is double", JVMType.D, res2.type);
+        assertEquals("Return value is 1.0", 1.0d, Double.longBitsToDouble(res2.value), 0.0);
+    }
+
+    @Test
+    public void double_remainder_works() {
+        byte[] buf = {DCONST_1.B(), DCONST_1.B(), DADD.B(), DUP.B(), DCONST_1.B(), DADD.B(), DREM.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.D, res.type);
+        assertEquals("Return value is 1.0", 1.0d, Double.longBitsToDouble(res.value), 0.0);
+    }
+
+    @Test
+    public void double_compare_l_works() {
+        byte[] buf = {DCONST_0.B(), DCONST_1.B(), DCMPL.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.I, res.type);
+        assertEquals("1.0 compared to 0.0 is 1", 1, res.value);
+
+        byte[] buf2 = {DCONST_1.B(), DCONST_1.B(), DCMPL.B(), DRETURN.B()};
+        JVMValue res2 = im.execMethod("", MAIN_METHOD_DESC, buf2);
+        assertEquals("Return type is double", JVMType.I, res2.type);
+        assertEquals("1.0 compared to 1.0 is 0", 0, res2.value);
+
+        byte[] buf3 = {DCONST_1.B(), DCONST_0.B(), DCMPL.B(), DRETURN.B()};
+        JVMValue res3 = im.execMethod("", MAIN_METHOD_DESC, buf3);
+        assertEquals("Return type is double", JVMType.I, res3.type);
+        assertEquals("0.0 compared to 1.0 is -1", -1, res3.value);
+
+        byte[] buf4 = {DCONST_0.B(), DCONST_0.B(), DDIV.B(), DCONST_1.B(), DCMPL.B(), DRETURN.B()};
+        JVMValue res4 = im.execMethod("", MAIN_METHOD_DESC, buf4);
+        assertEquals("Return type is double", JVMType.I, res4.type);
+        assertEquals("Anything compared to NaN is -1", -1, res4.value);
+    }
+
+    @Test
+    public void double_compare_g_works() {
+        byte[] buf = {DCONST_0.B(), DCONST_1.B(), DCMPG.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.I, res.type);
+        assertEquals("1.0 compared to 0.0 is 1", 1, res.value);
+
+        byte[] buf2 = {DCONST_1.B(), DCONST_1.B(), DCMPG.B(), DRETURN.B()};
+        JVMValue res2 = im.execMethod("", MAIN_METHOD_DESC, buf2);
+        assertEquals("Return type is double", JVMType.I, res2.type);
+        assertEquals("1.0 compared to 1.0 is 0", 0, res2.value);
+
+        byte[] buf3 = {DCONST_1.B(), DCONST_0.B(), DCMPG.B(), DRETURN.B()};
+        JVMValue res3 = im.execMethod("", MAIN_METHOD_DESC, buf3);
+        assertEquals("Return type is double", JVMType.I, res3.type);
+        assertEquals("0.0 compared to 1.0 is -1", -1, res3.value);
+
+        byte[] buf4 = {DCONST_0.B(), DCONST_0.B(), DDIV.B(), DCONST_1.B(), DCMPG.B(), DRETURN.B()};
+        JVMValue res4 = im.execMethod("", MAIN_METHOD_DESC, buf4);
+        assertEquals("Return type is double", JVMType.I, res4.type);
+        assertEquals("Anything compared to NaN is 1", 1, res4.value);
+    }
+
+    @Test
+    public void double_store_load() {
+        byte[] buf = {DCONST_1.B(), DCONST_1.B(), DSTORE.B(), (byte) 5, DSTORE_0.B(), DLOAD.B(), (byte) 5, DLOAD_0.B(), DADD.B(), DRETURN.B()};
+
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+
+        assertEquals("Return type is double", JVMType.D, res.type);
+        assertEquals("Return value is 2.0", 2.0d, Double.longBitsToDouble(res.value), 0.0);
     }
 
     // Simple if tests
@@ -98,7 +209,7 @@ public class TestInterp {
         byte[] buf = {ICONST_2.B(), ISTORE.B(), (byte) 1, ILOAD.B(), (byte) 1, IFNE.B(), (byte) 0, (byte) 6,
             IINC.B(), (byte) 1, (byte) 1, ILOAD.B(), (byte) 1, IRETURN.B()};
         System.out.println(Arrays.toString(buf));
-        JVMValue res = im.execMethod("", "main:()V", buf);
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
@@ -106,7 +217,7 @@ public class TestInterp {
         byte[] buf2 = {ICONST_2.B(), ISTORE_1.B(), ILOAD_1.B(), IFNE.B(), (byte) 0, (byte) 6,
             IINC.B(), (byte) 1, (byte) 1, ILOAD.B(), (byte) 1, IRETURN.B()};
         System.out.println(Arrays.toString(buf2));
-        res = im.execMethod("", "main:()V", buf2);
+        res = im.execMethod("", MAIN_METHOD_DESC, buf2);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
@@ -116,13 +227,13 @@ public class TestInterp {
     @Test
     public void iconst_dup() {
         byte[] buf = {ICONST_1.B(), DUP.B(), IADD.B(), IRETURN.B()};
-        JVMValue res = im.execMethod("", "main:()V", buf);
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
 
         byte[] buf2 = {ICONST_1.B(), DUP.B(), IADD.B(), DUP.B(), IADD.B(), IRETURN.B()};
-        res = im.execMethod("", "main:()V", buf2);
+        res = im.execMethod("", MAIN_METHOD_DESC, buf2);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 4", 4, (int) res.value);
@@ -131,13 +242,13 @@ public class TestInterp {
     @Test
     public void iconst_dup_nop_pop() {
         byte[] buf = {ICONST_1.B(), DUP.B(), NOP.B(), POP.B(), IRETURN.B()};
-        JVMValue res = im.execMethod("", "main:()V", buf);
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 1", 1, (int) res.value);
 
         byte[] buf2 = {ICONST_1.B(), DUP.B(), NOP.B(), POP.B(), POP.B(), RETURN.B()};
-        res = im.execMethod("", "main:()V", buf2);
+        res = im.execMethod("", MAIN_METHOD_DESC, buf2);
 
         assertNull("Return should be null", res);
     }
@@ -145,13 +256,13 @@ public class TestInterp {
     @Test
     public void iconst_dup_x1() {
         byte[] buf = {ICONST_1.B(), ICONST_2.B(), DUP_X1.B(), IADD.B(), IADD.B(), IRETURN.B()};
-        JVMValue res = im.execMethod("", "main:()V", buf);
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 5, (int) res.value);
 
         byte[] buf2 = {ICONST_1.B(), ICONST_2.B(), DUP_X1.B(), IADD.B(), DUP_X1.B(), IADD.B(), IADD.B(), IRETURN.B()};
-        res = im.execMethod("", "main:()V", buf2);
+        res = im.execMethod("", MAIN_METHOD_DESC, buf2);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 4", 8, (int) res.value);
@@ -163,13 +274,13 @@ public class TestInterp {
         InterpMain vm = new InterpMain(new ClassRepository());
         byte[] buffy = {ICONST_1.B(), ICONST_1.B(), IADD.B(), ICONST_2.B(), IF_ICMPEQ.B(), (byte) 0, (byte) 11, ICONST_4.B(), GOTO.B(), (byte) 0, (byte) 12, ICONST_3.B(), IRETURN.B()};
 
-        JVMValue res = vm.execMethod("", "main:()V", buffy);
+        JVMValue res = vm.execMethod("", MAIN_METHOD_DESC, buffy);
 
         assertEquals(JVMType.I, res.type);
         assertEquals(2, ((int) res.value));
 
         byte[] buffy2 = {ICONST_1.B(), ICONST_1.B(), IADD.B(), ICONST_3.B(), IF_ICMPEQ.B(), (byte) 0, (byte) 11, ICONST_4.B(), GOTO.B(), (byte) 0, (byte) 12, ICONST_3.B(), IRETURN.B()};
-        res = vm.execMethod("", "main:()V", buffy2);
+        res = vm.execMethod("", MAIN_METHOD_DESC, buffy2);
 
         assertEquals(JVMType.I, res.type);
         assertEquals(2, ((int) res.value));
