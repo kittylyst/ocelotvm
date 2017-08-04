@@ -102,6 +102,13 @@ public class EvaluationStack extends Stack<JVMValue> {
         double div = Double.longBitsToDouble(ev1.value) / Double.longBitsToDouble(ev2.value);
         push(new JVMValue(JVMType.D, Double.doubleToLongBits(div)));
     }
+
+    public void drem() {
+        JVMValue ev1 = pop();
+        JVMValue ev2 = pop();
+        double result = Double.longBitsToDouble(ev1.value) % Double.longBitsToDouble(ev2.value);
+        push(new JVMValue(JVMType.D, Double.doubleToLongBits(result)));
+    }
     
     public void dmul() {
         JVMValue ev1 = pop();
@@ -117,5 +124,24 @@ public class EvaluationStack extends Stack<JVMValue> {
 
     public void dconst(double d) {
         push(new JVMValue(JVMType.D, Double.doubleToLongBits(d)));
+    }
+
+    public void dcmpg() {
+        dcmp(1);
+    }
+
+    public void dcmpl() {
+        dcmp(-1);
+    }
+
+    private void dcmp(int nanResult) {
+        double d1 = Double.longBitsToDouble(pop().value);
+        double d2 = Double.longBitsToDouble(pop().value);
+        if (Double.isNaN(d1) || Double.isNaN(d2)) {
+            push(new JVMValue(JVMType.I, nanResult));
+        } else {
+            int cmp = Double.compare(d1, d2);
+            push(new JVMValue(JVMType.I, cmp));
+        }
     }
 }

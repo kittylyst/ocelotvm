@@ -87,6 +87,12 @@ public final class InterpMain {
                 case DADD:
                     eval.dadd();
                     break;
+                case DCMPG:
+                    eval.dcmpg();
+                    break;
+                case DCMPL:
+                    eval.dcmpl();
+                    break;
                 case DCONST_0:
                     eval.dconst(0.0);
                     break;
@@ -116,6 +122,9 @@ public final class InterpMain {
                     break;
                 case DNEG:
                     eval.dneg();
+                    break;
+                case DREM:
+                    eval.drem();
                     break;
                 case DRETURN:
                     return eval.pop();

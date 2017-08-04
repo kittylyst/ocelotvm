@@ -133,6 +133,60 @@ public class TestInterp {
     }
 
     @Test
+    public void double_remainder_works() {
+        byte[] buf = {DCONST_1.B(), DCONST_1.B(), DADD.B(), DUP.B(), DCONST_1.B(), DADD.B(), DREM.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.D, res.type);
+        assertEquals("Return value is 1.0", 1.0d, Double.longBitsToDouble(res.value), 0.0);
+    }
+
+    @Test
+    public void double_compare_l_works() {
+        byte[] buf = {DCONST_0.B(), DCONST_1.B(), DCMPL.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.I, res.type);
+        assertEquals("1.0 compared to 0.0 is 1", 1, res.value);
+
+        byte[] buf2 = {DCONST_1.B(), DCONST_1.B(), DCMPL.B(), DRETURN.B()};
+        JVMValue res2 = im.execMethod("", MAIN_METHOD_DESC, buf2);
+        assertEquals("Return type is double", JVMType.I, res2.type);
+        assertEquals("1.0 compared to 1.0 is 0", 0, res2.value);
+
+        byte[] buf3 = {DCONST_1.B(), DCONST_0.B(), DCMPL.B(), DRETURN.B()};
+        JVMValue res3 = im.execMethod("", MAIN_METHOD_DESC, buf3);
+        assertEquals("Return type is double", JVMType.I, res3.type);
+        assertEquals("0.0 compared to 1.0 is -1", -1, res3.value);
+
+        byte[] buf4 = {DCONST_0.B(), DCONST_0.B(), DDIV.B(), DCONST_1.B(), DCMPL.B(), DRETURN.B()};
+        JVMValue res4 = im.execMethod("", MAIN_METHOD_DESC, buf4);
+        assertEquals("Return type is double", JVMType.I, res4.type);
+        assertEquals("Anything compared to NaN is -1", -1, res4.value);
+    }
+
+    @Test
+    public void double_compare_g_works() {
+        byte[] buf = {DCONST_0.B(), DCONST_1.B(), DCMPG.B(), DRETURN.B()};
+        JVMValue res = im.execMethod("", MAIN_METHOD_DESC, buf);
+        assertEquals("Return type is double", JVMType.I, res.type);
+        assertEquals("1.0 compared to 0.0 is 1", 1, res.value);
+
+        byte[] buf2 = {DCONST_1.B(), DCONST_1.B(), DCMPG.B(), DRETURN.B()};
+        JVMValue res2 = im.execMethod("", MAIN_METHOD_DESC, buf2);
+        assertEquals("Return type is double", JVMType.I, res2.type);
+        assertEquals("1.0 compared to 1.0 is 0", 0, res2.value);
+
+        byte[] buf3 = {DCONST_1.B(), DCONST_0.B(), DCMPG.B(), DRETURN.B()};
+        JVMValue res3 = im.execMethod("", MAIN_METHOD_DESC, buf3);
+        assertEquals("Return type is double", JVMType.I, res3.type);
+        assertEquals("0.0 compared to 1.0 is -1", -1, res3.value);
+
+        byte[] buf4 = {DCONST_0.B(), DCONST_0.B(), DDIV.B(), DCONST_1.B(), DCMPG.B(), DRETURN.B()};
+        JVMValue res4 = im.execMethod("", MAIN_METHOD_DESC, buf4);
+        assertEquals("Return type is double", JVMType.I, res4.type);
+        assertEquals("Anything compared to NaN is 1", 1, res4.value);
+    }
+
+    @Test
     public void double_store_load() {
         byte[] buf = {DCONST_1.B(), DCONST_1.B(), DSTORE.B(), (byte) 5, DSTORE_0.B(), DLOAD.B(), (byte) 5, DLOAD_0.B(), DADD.B(), DRETURN.B()};
 
