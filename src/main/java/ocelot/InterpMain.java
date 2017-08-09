@@ -13,12 +13,11 @@ public final class InterpMain {
     private static final Opcode[] table = new Opcode[256];
 
     private final ClassRepository repo;
-    
-    
+
     public InterpMain(ClassRepository classes) {
         repo = classes;
     }
-    
+
     static {
         for (Opcode op : Opcode.values()) {
             table[op.getOpcode()] = op;
@@ -38,13 +37,13 @@ public final class InterpMain {
     public JVMValue execMethod(OcelotClass.CPMethod meth) {
         return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBuf());
     }
-    
+
     public JVMValue execMethod(String klassName, String desc, final byte[] instr) {
         if (instr == null || instr.length == 0)
             return null;
 
         final EvaluationStack eval = new EvaluationStack();
-        final LocalVars lvt = new LocalVars(eval);
+        final LocalVars lvt = new LocalVars();
         final String currentKlass = klassName;
 
         int current = 0;
@@ -64,31 +63,33 @@ public final class InterpMain {
                     eval.aconst_null();
                     break;
                 case ALOAD:
-                    lvt.aload(instr[current++]);
+                    eval.push(lvt.aload(instr[current++]));
                     break;
                 case ALOAD_0:
-                    lvt.aload((byte) 0);
+                    eval.push(lvt.aload((byte) 0));
                     break;
                 case ALOAD_1:
-                    lvt.aload((byte) 1);
+                    eval.push(lvt.aload((byte) 1));
                     break;
                 case ASTORE:
-                    lvt.astore(instr[current++]);
+                    lvt.astore(instr[current++], eval.pop());
                     break;
                 case ASTORE_0:
-                    lvt.astore((byte) 0);
+                    lvt.astore((byte) 0, eval.pop());
                     break;
                 case ASTORE_1:
-                    lvt.astore((byte) 1);
+                    lvt.astore((byte) 1, eval.pop());
                     break;
                 case BIPUSH:
-                    eval.iconst((int)instr[current++]);
+                    eval.iconst((int) instr[current++]);
                     break;
                 case DUP:
                     eval.dup();
                     break;
+                case DUP_X1:
+                    eval.dupX1();
+                    break;
                 case GOTO:
-//                    System.out.println(current + " += " + (instr[current] << 8) + " + " + instr[current + 1]);
                     current += 2 + ((int) instr[current] << 8) + (int) instr[current + 1];
                     break;
                 case IADD:
@@ -175,19 +176,19 @@ public final class InterpMain {
                     lvt.iinc(instr[current++], instr[current++]);
                     break;
                 case ILOAD:
-                    lvt.iload(instr[current++]);
+                    eval.push(lvt.iload(instr[current++]));
                     break;
                 case ILOAD_0:
-                    lvt.iload((byte) 0);
+                    eval.push(lvt.iload((byte) 0));
                     break;
                 case ILOAD_1:
-                    lvt.iload((byte) 1);
+                    eval.push(lvt.iload((byte) 1));
                     break;
                 case ILOAD_2:
-                    lvt.iload((byte) 2);
+                    eval.push(lvt.iload((byte) 2));
                     break;
                 case ILOAD_3:
-                    lvt.iload((byte) 3);
+                    eval.push(lvt.iload((byte) 3));
                     break;
                 case IMUL:
                     eval.imul();
@@ -196,9 +197,8 @@ public final class InterpMain {
                     eval.ineg();
                     break;
                 case INVOKESTATIC:
-                    // FIXME
                     int lookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OcelotClass.CPMethod meth = repo.lookupInCP(currentKlass, (short)lookup);
+                    OcelotClass.CPMethod meth = repo.lookupInCP(currentKlass, (short) lookup);
                     final JVMValue ret = execMethod(meth);
                     eval.push(ret);
                     break;
@@ -208,19 +208,19 @@ public final class InterpMain {
                 case IRETURN:
                     return eval.pop();
                 case ISTORE:
-                    lvt.istore(instr[current++]);
+                    lvt.istore(instr[current++], eval.pop());
                     break;
                 case ISTORE_0:
-                    lvt.istore((byte) 0);
+                    lvt.istore((byte) 0, eval.pop());
                     break;
                 case ISTORE_1:
-                    lvt.istore((byte) 1);
+                    lvt.istore((byte) 1, eval.pop());
                     break;
                 case ISTORE_2:
-                    lvt.istore((byte) 2);
+                    lvt.istore((byte) 2, eval.pop());
                     break;
                 case ISTORE_3:
-                    lvt.istore((byte) 3);
+                    lvt.istore((byte) 3, eval.pop());
                     break;
                 case ISUB:
                     eval.isub();
@@ -237,14 +237,8 @@ public final class InterpMain {
                     }
                     eval.pop();
                     break;
-                // Disallowed opcodes
-                case BREAKPOINT:
-                case IMPDEP1:
-                case IMPDEP2:
-                case JSR:
-                case JSR_W:
-                case RET:
-                    throw new IllegalArgumentException("Illegal opcode byte: " + (b & 0xff) + " encountered at position " + (current - 1) + ". Stopping.");
+                case RETURN:
+                    return null;
                 // Dummy implementation
                 case GETSTATIC:
                 case INVOKEVIRTUAL:
@@ -256,11 +250,14 @@ public final class InterpMain {
                     current += num;
                     System.out.println();
                     break;
-                case RETURN:
-                    return null;
-                case DUP_X1:
-                    eval.dupX1();
-                    break;
+                // Disallowed opcodes
+                case BREAKPOINT:
+                case IMPDEP1:
+                case IMPDEP2:
+                case JSR:
+                case JSR_W:
+                case RET:
+                    throw new IllegalArgumentException("Illegal opcode byte: " + (b & 0xff) + " encountered at position " + (current - 1) + ". Stopping.");
                 default:
                     System.err.println("Saw " + op + " - that can't happen. Stopping.");
                     System.exit(1);
