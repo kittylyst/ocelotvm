@@ -34,16 +34,19 @@ public final class InterpMain {
         }
     }
 
-    public JVMValue execMethod(OcelotClass.CPMethod meth) {
-        return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBuf());
+    public JVMValue execMethod(final OcelotClass.CPMethod meth) {
+        return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBuf(), new LocalVars());
     }
 
-    public JVMValue execMethod(String klassName, String desc, final byte[] instr) {
+    public JVMValue execMethod(final OcelotClass.CPMethod meth, final LocalVars lvt) {
+        return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBuf(), lvt);
+    }
+
+    JVMValue execMethod(final String klassName, final String desc, final byte[] instr, final LocalVars lvt) {
         if (instr == null || instr.length == 0)
             return null;
 
         final EvaluationStack eval = new EvaluationStack();
-        final LocalVars lvt = new LocalVars();
         final String currentKlass = klassName;
 
         int current = 0;
@@ -198,8 +201,15 @@ public final class InterpMain {
                     break;
                 case INVOKESTATIC:
                     int lookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OcelotClass.CPMethod meth = repo.lookupInCP(currentKlass, (short) lookup);
-                    final JVMValue ret = execMethod(meth);
+                    OcelotClass.CPMethod toBeCalled = repo.lookupInCP(currentKlass, (short) lookup);
+                    int paramCount = toBeCalled.numParams();
+                    final LocalVars withVars = new LocalVars();
+                    JVMValue[] toPass = new JVMValue[paramCount];
+                    for (int j=paramCount-1; j>=0; j--) {
+                        toPass[j] = eval.pop();
+                    }
+                    withVars.setup(toPass);
+                    final JVMValue ret = execMethod(toBeCalled, withVars);
                     eval.push(ret);
                     break;
                 case IOR:

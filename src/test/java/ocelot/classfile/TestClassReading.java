@@ -18,6 +18,9 @@ import ocelot.rt.ClassRepository;
  */
 public class TestClassReading {
 
+    private static InterpMain im = new InterpMain(new ClassRepository());
+    private ClassRepository repo = new ClassRepository();
+
     private OcelotClass ce;
     private byte[] buf;
 
@@ -131,6 +134,69 @@ public class TestClassReading {
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 9", 9, (int) res.value);
 
+    }
+
+    //////////////////////////////////////
+    //
+    // Simple file-based tests
+    @Test
+    public void hello_world_loaded_from_file_executes() throws Exception {
+//        byte[] buf = Utils.pullBytes("Println.class");
+//        int offset = 481; // Harcoded / hand-figured out
+//        byte[] tmp = {buf[offset], buf[offset + 1], buf[offset + 2], buf[offset + 3],
+//            buf[offset + 4], buf[offset + 5], buf[offset + 6], buf[offset + 7], buf[offset + 8]}; // new byte[9];
+//        System.out.println(Arrays.toString(tmp));
+
+        String fName = "Println.class";
+        buf = Utils.pullBytes(fName);
+        ce = OcelotClass.of(buf, fName);
+
+        repo.add(ce);
+        im = new InterpMain(repo);
+
+        OcelotClass.CPMethod meth = ce.getMethodByName("main:([Ljava/lang/String;)V");
+
+        assertNull("Hello World should execute", im.execMethod(meth));
+    }
+
+    @Test
+    public void simple_branching_executes() throws Exception {
+        String fName = "optjava/bc/SimpleTests.class";
+        buf = Utils.pullBytes(fName);
+        ce = OcelotClass.of(buf, fName);
+
+        repo.add(ce);
+        im = new InterpMain(repo);
+
+        OcelotClass.CPMethod meth = ce.getMethodByName("if_bc:()I");
+        JVMValue res = im.execMethod(meth);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 2", 2, (int) res.value);
+//        int offset = 330; // Harcoded / hand-figured out
+//        byte[] tmp = {buf[offset], buf[offset + 1], buf[offset + 2], buf[offset + 3],
+//            buf[offset + 4], buf[offset + 5], buf[offset + 6], buf[offset + 7], buf[offset + 8], buf[offset + 9], buf[offset + 10]}; // new byte[11];
+//        System.out.println(Arrays.toString(tmp));
+    }
+
+    @Test
+    public void simple_static_calls_executes() throws Exception {
+        String fName = "octest/StaticCalls.class";
+        buf = Utils.pullBytes(fName);
+        ce = OcelotClass.of(buf, fName);
+
+        repo.add(ce);
+        im = new InterpMain(repo);
+
+        OcelotClass.CPMethod meth = ce.getMethodByName("call1:()I"); // "main:([Ljava/lang/String;)V");
+        JVMValue res = im.execMethod(meth);
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 23", 23, (int) res.value);
+        
+        meth = ce.getMethodByName("call4:()I");
+        res = im.execMethod(meth);
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 47", 47, (int) res.value);
     }
 
 }

@@ -34,7 +34,7 @@ public final class OcelotClass {
     private CPAttr[] attributes;
 
     private final Map<String, CPMethod> methLookup = new HashMap<>();
-    
+
     public static final int ACC_PUBLIC = 0x0001;      // Declared public; may be accessed from outside its package.
     public static final int ACC_PRIVATE = 0x0002;      // Declared private; usable only within the defining class.
     public static final int ACC_PROTECTED = 0x0004;      // Declared protected; may be accessed within subclasses.
@@ -57,7 +57,6 @@ public final class OcelotClass {
     public static final int ACC_NATIVE = 0x0100;       // (Method) Declared native; implemented in a language other than Java.
     public static final int ACC_ABSTRACT_M = 0x0400;       // (Method) Declared abstract; no implementation is provided.
     public static final int ACC_STRICT = 0x0800;       // (Method) Declared strictfp; floating-point mode is FP-strict.
-    
 
     OcelotClass(byte[] buf, String fName) {
         filename = fName;
@@ -211,6 +210,7 @@ public final class OcelotClass {
     }
 
     class CPBase {
+
         protected final String className;
         protected int flags;
         protected int nameIndex;
@@ -244,7 +244,7 @@ public final class OcelotClass {
         public String getClassName() {
             return className;
         }
-        
+
         public void setAttr(int i, CPAttr attr) {
             attrs[i] = attr;
         }
@@ -264,12 +264,16 @@ public final class OcelotClass {
     }
 
     public class CPMethod extends CPBase {
+
         private byte[] buf;
         private final String nameAndType;
+        private final String signature;
+        private int numParams = -1;
 
         CPMethod(int mFlags, int nameIdx, int descIdx, int attrCount) {
             super(mFlags, nameIdx, descIdx, attrCount);
-            nameAndType = OcelotClass.this.resolveAsString(nameIndex) +":"+ OcelotClass.this.resolveAsString(descIndex);
+            signature = OcelotClass.this.resolveAsString(descIndex);
+            nameAndType = OcelotClass.this.resolveAsString(nameIndex) + ":" + OcelotClass.this.resolveAsString(descIndex);
         }
 
         @Override
@@ -287,6 +291,37 @@ public final class OcelotClass {
 
         public String getNameAndType() {
             return nameAndType;
+        }
+
+        public int numParams() {
+            if (numParams > -1)
+                return numParams;
+            String tmp = signature;
+            numParams = 0;
+            OUTER: for (char c : signature.toCharArray()) {
+                switch (c) {
+                    case '(':
+                        break;
+                    case 'Z':
+                    case 'B':
+                    case 'S':
+                    case 'C':
+                    case 'I':
+                    case 'J':
+                    case 'F':
+                    case 'D':
+                        numParams++;
+                        break;
+                    case 'L':
+                        // FIXME Parse type
+                        break;
+                    case ')':
+                        break OUTER;
+                    default:
+                        throw new IllegalStateException("Saw illegal char: "+ c +" as type descriptors");
+                }
+            }
+            return numParams;
         }
     }
 
@@ -322,7 +357,7 @@ public final class OcelotClass {
             int desc_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
             int attrs_count = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
             CPBase b = new CPBase(mFlags, name_idx, desc_idx, attrs_count);
-            
+
             attributes[aidx] = parseAttribute(b);
         }
 
@@ -481,7 +516,7 @@ public final class OcelotClass {
     public String className() {
         return resolveAsString(thisClzIndex);
     }
-    
+
     public String resolveAsString(int i) {
         final CPEntry top = items[i - 1];
 
@@ -519,7 +554,7 @@ public final class OcelotClass {
     public String toString() {
         return "OcelotClass{" + "filename=" + filename + ", major=" + major + ", minor=" + minor + ", poolItemCount=" + poolItemCount + ", flags=" + flags + ", thisClzIndex=" + thisClzIndex + ", superClzIndex=" + superClzIndex + ", items=" + items + ", interfaces=" + interfaces + ", fields=" + fields + ", methods=" + methods + ", attributes=" + attributes + '}';
     }
-    
+
     // Maybe some useful techniques in ASM ?
     public OcelotClass scan(String cName) throws IOException {
         final Path clzPath = classNameToPath(cName);
