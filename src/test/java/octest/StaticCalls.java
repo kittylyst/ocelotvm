@@ -25,5 +25,8 @@ public class StaticCalls {
     public static int call4() {
         return call3(46);
     }
-    
+
+    public static int adder(int i, int j) {
+        return i + j;
+    }
 }

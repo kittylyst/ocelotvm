@@ -11,7 +11,7 @@ public class JVMValue {
     public final JVMType type;
     public final long value;
 
-    JVMValue(JVMType t, long bits) {
+    public JVMValue(JVMType t, long bits) {
         this.type = t;
         this.value = bits;
     }

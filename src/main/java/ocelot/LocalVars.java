@@ -43,7 +43,7 @@ public final class LocalVars {
         vars[b & 0xff] = val;
     }
 
-    void setup(JVMValue[] vals) {
+    public void setup(JVMValue[] vals) {
         System.arraycopy(vals, 0, vars, 0, vals.length);
     }
 }

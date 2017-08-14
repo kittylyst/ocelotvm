@@ -3,10 +3,7 @@ package ocelot.classfile;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import ocelot.InterpMain;
-import ocelot.JVMType;
-import ocelot.JVMValue;
-import ocelot.Utils;
+import ocelot.*;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import static ocelot.classfile.CPType.*;
@@ -192,11 +189,23 @@ public class TestClassReading {
         JVMValue res = im.execMethod(meth);
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 23", 23, (int) res.value);
-        
+
         meth = ce.getMethodByName("call4:()I");
         res = im.execMethod(meth);
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 47", 47, (int) res.value);
+
+        meth = ce.getMethodByName("adder:(II)I");
+        LocalVars lv = new LocalVars();
+        JVMValue[] vars = new JVMValue[2];
+        vars[0] = new JVMValue(JVMType.I, 5L);
+        vars[1] = new JVMValue(JVMType.I, 7L);
+        lv.setup(vars);
+        
+        res = im.execMethod(meth, lv);
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 12", 12, (int) res.value);
+
     }
 
 }
