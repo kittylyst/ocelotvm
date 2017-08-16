@@ -5,7 +5,7 @@ import org.junit.Test;
 import java.util.Arrays;
 
 import static ocelot.Opcode.*;
-import ocelot.classfile.OcelotClass;
+import ocelot.classfile.OCKlass;
 import ocelot.rt.ClassRepository;
 import static org.junit.Assert.*;
 import org.junit.Before;

@@ -5,7 +5,6 @@ package ocelot;
  * @author ben
  */
 public enum Opcode {
-
     ACONST_NULL(0x01),
     ALOAD(0x19, 1),
     ALOAD_0(0x2a),
@@ -16,6 +15,7 @@ public enum Opcode {
     BIPUSH(0x10, 1),
     BREAKPOINT(0xca),
     DUP(0x59),
+    DUP_X1(0x5a),
     GETSTATIC(0xb2, 2),
     GOTO(0xa7, 2),
     IADD(0x60),
@@ -47,6 +47,7 @@ public enum Opcode {
     ILOAD_1(0x1b),
     ILOAD_2(0x1c),
     ILOAD_3(0x1d),
+    INVOKESPECIAL(0xb7, 2),
     INVOKESTATIC(0xb8, 2),
     INVOKEVIRTUAL(0xb6, 2),
     IRETURN(0xac),
@@ -55,6 +56,9 @@ public enum Opcode {
     ISTORE_1(0x3c),
     ISTORE_2(0x3d),
     ISTORE_3(0x3e),
+    MONITORENTER(0xc2),
+    MONITOREXIT(0xc3),
+    NEW(0xbb, 2),
     JSR(0xa8, 2),
     JSR_W(0xc9, 2),
     LDC(0x12, 1),
@@ -62,8 +66,7 @@ public enum Opcode {
     POP(0x57),
     POP2(0x58),
     RET(0xa9, 1),
-    RETURN(0xb1),
-    DUP_X1(0x5a);
+    RETURN(0xb1);    
 
     public byte numParams() {
         return numParams;

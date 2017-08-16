@@ -19,7 +19,7 @@ public class CPAttr {
     }
 }
 
-class ConstantValueAttr extends CPAttr {
+final class ConstantValueAttr extends CPAttr {
 
     public ConstantValueAttr(int index) {
         super(index);
@@ -27,13 +27,13 @@ class ConstantValueAttr extends CPAttr {
 
 }
 
-class CodeAttr extends CPAttr {
+final class CodeAttr extends CPAttr {
     public CodeAttr(int index) {
         super(index);
     }
 }
 
-class ExceptionsAttr extends CPAttr {
+final class ExceptionsAttr extends CPAttr {
     public ExceptionsAttr(int index) {
         super(index);
     }

@@ -1,8 +1,8 @@
 package ocelot;
 
-import java.util.Arrays;
-import ocelot.classfile.OcelotClass;
+import ocelot.classfile.OCKlass;
 import ocelot.rt.ClassRepository;
+import ocelot.rt.JVMHeap;
 
 /**
  *
@@ -14,6 +14,8 @@ public final class InterpMain {
 
     private final ClassRepository repo;
 
+    private final JVMHeap heap = new JVMHeap();
+    
     public InterpMain(ClassRepository classes) {
         repo = classes;
     }
@@ -34,11 +36,11 @@ public final class InterpMain {
         }
     }
 
-    public JVMValue execMethod(final OcelotClass.CPMethod meth) {
+    public JVMValue execMethod(final OCKlass.CPMethod meth) {
         return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBuf(), new LocalVars());
     }
 
-    public JVMValue execMethod(final OcelotClass.CPMethod meth, final LocalVars lvt) {
+    public JVMValue execMethod(final OCKlass.CPMethod meth, final LocalVars lvt) {
         return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBuf(), lvt);
     }
 
@@ -59,8 +61,11 @@ public final class InterpMain {
                 System.exit(1);
             }
             byte num = op.numParams();
-            JVMValue v, v2;
-            int jumpTo;
+            JVMValue v, v2, ret;
+            OCKlass.CPMethod toBeCalled;
+            int paramCount, jumpTo, cpLookup;
+            LocalVars withVars;
+            JVMValue[] toPass;
             switch (op) {
                 case ACONST_NULL:
                     eval.aconst_null();
@@ -199,18 +204,13 @@ public final class InterpMain {
                 case INEG:
                     eval.ineg();
                     break;
+                case INVOKESPECIAL:
+                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
+                    dispatchInvoke(repo.lookupMethodCP(currentKlass, (short) cpLookup), eval, true);
+                    break;
                 case INVOKESTATIC:
-                    int lookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OcelotClass.CPMethod toBeCalled = repo.lookupInCP(currentKlass, (short) lookup);
-                    int paramCount = toBeCalled.numParams();
-                    final LocalVars withVars = new LocalVars();
-                    JVMValue[] toPass = new JVMValue[paramCount];
-                    for (int j=paramCount-1; j>=0; j--) {
-                        toPass[j] = eval.pop();
-                    }
-                    withVars.setup(toPass);
-                    final JVMValue ret = execMethod(toBeCalled, withVars);
-                    eval.push(ret);
+                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
+                    dispatchInvoke(repo.lookupMethodCP(currentKlass, (short) cpLookup), eval, false);
                     break;
                 case IOR:
                     eval.ior();
@@ -234,6 +234,16 @@ public final class InterpMain {
                     break;
                 case ISUB:
                     eval.isub();
+                    break;
+                case MONITORENTER:
+                case MONITOREXIT:
+                    // FIXME TEMP
+                    eval.pop();
+                    break;
+                case NEW:
+                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
+                    OCKlass klass = repo.lookupKlassCP(currentKlass, (short) cpLookup);
+                    eval.push(new JVMValue(JVMType.A, klass.allocateObj()));
                     break;
                 case NOP:
                     break;
@@ -273,6 +283,20 @@ public final class InterpMain {
                     System.exit(1);
             }
         }
+    }
+
+    public void dispatchInvoke(OCKlass.CPMethod toBeCalled, EvaluationStack eval, boolean isInstance) {
+        int paramCount = toBeCalled.numParams();
+        if (isInstance)
+            paramCount++;
+        LocalVars withVars = new LocalVars();
+        JVMValue[] toPass = new JVMValue[paramCount];
+        for (int j = paramCount - 1; j >= 0; j--) {
+            toPass[j] = eval.pop();
+        }
+        withVars.setup(toPass);
+
+        eval.push(execMethod(toBeCalled, withVars));
     }
 
 }

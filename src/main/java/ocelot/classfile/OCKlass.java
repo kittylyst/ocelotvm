@@ -12,7 +12,7 @@ import org.objectweb.asm.ClassReader;
  *
  * @author ben
  */
-public final class OcelotClass {
+public final class OCKlass {
 
     private final byte[] clzBytes;
     private final String filename;
@@ -58,7 +58,7 @@ public final class OcelotClass {
     public static final int ACC_ABSTRACT_M = 0x0400;       // (Method) Declared abstract; no implementation is provided.
     public static final int ACC_STRICT = 0x0800;       // (Method) Declared strictfp; floating-point mode is FP-strict.
 
-    OcelotClass(byte[] buf, String fName) {
+    OCKlass(byte[] buf, String fName) {
         filename = fName;
         clzBytes = buf;
     }
@@ -89,8 +89,8 @@ public final class OcelotClass {
 //        parseAttributes();
     }
 
-    public static OcelotClass of(byte[] buf, String fName) throws ClassNotFoundException {
-        OcelotClass out = new OcelotClass(buf, fName);
+    public static OCKlass of(byte[] buf, String fName) throws ClassNotFoundException {
+        OCKlass out = new OCKlass(buf, fName);
         out.parse();
         return out;
     }
@@ -209,6 +209,10 @@ public final class OcelotClass {
         return methLookup.get(nameAndType);
     }
 
+    public long allocateObj() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     class CPBase {
 
         protected final String className;
@@ -222,7 +226,7 @@ public final class OcelotClass {
             nameIndex = name_idx;
             descIndex = desc_idx;
             attrs = new CPAttr[attrCount];
-            className = OcelotClass.this.className();
+            className = OCKlass.this.className();
         }
 
         public int getFlags() {
@@ -272,8 +276,8 @@ public final class OcelotClass {
 
         CPMethod(int mFlags, int nameIdx, int descIdx, int attrCount) {
             super(mFlags, nameIdx, descIdx, attrCount);
-            signature = OcelotClass.this.resolveAsString(descIndex);
-            nameAndType = OcelotClass.this.resolveAsString(nameIndex) + ":" + OcelotClass.this.resolveAsString(descIndex);
+            signature = OCKlass.this.resolveAsString(descIndex);
+            nameAndType = OCKlass.this.resolveAsString(nameIndex) + ":" + OCKlass.this.resolveAsString(descIndex);
         }
 
         @Override
@@ -296,7 +300,6 @@ public final class OcelotClass {
         public int numParams() {
             if (numParams > -1)
                 return numParams;
-            String tmp = signature;
             numParams = 0;
             OUTER: for (char c : signature.toCharArray()) {
                 switch (c) {
@@ -314,7 +317,7 @@ public final class OcelotClass {
                         break;
                     case 'L':
                         // FIXME Parse type
-                        break;
+                        throw new IllegalStateException("Class parameters not implemented yet");
                     case ')':
                         break OUTER;
                     default:
@@ -556,14 +559,14 @@ public final class OcelotClass {
     }
 
     // Maybe some useful techniques in ASM ?
-    public OcelotClass scan(String cName) throws IOException {
+    public OCKlass scan(String cName) throws IOException {
         final Path clzPath = classNameToPath(cName);
         final byte[] buf = Files.readAllBytes(clzPath);
-        OcelotClass out = null;
+        OCKlass out = null;
         try (final InputStream in = Files.newInputStream(clzPath)) {
             try {
                 final ClassReader cr = new ClassReader(in);
-                out = new OcelotClass(buf, clzPath.toString());
+                out = new OCKlass(buf, clzPath.toString());
             } catch (Exception e) {
                 throw new IOException("Could not read class file " + clzPath, e);
             }

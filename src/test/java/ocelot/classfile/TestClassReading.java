@@ -18,14 +18,14 @@ public class TestClassReading {
     private static InterpMain im = new InterpMain(new ClassRepository());
     private ClassRepository repo = new ClassRepository();
 
-    private OcelotClass ce;
+    private OCKlass ce;
     private byte[] buf;
 
     @Test
     public void check_cp_for_hello_world() throws IOException, ClassNotFoundException {
         String fName = "Println.class";
         buf = Utils.pullBytes(fName);
-        ce = new OcelotClass(buf, fName);
+        ce = new OCKlass(buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
         assertEquals("Minor version should be 0", 0, ce.getMinor());
@@ -64,7 +64,7 @@ public class TestClassReading {
     public void check_simple_fields_methods() throws IOException, ClassNotFoundException {
         String fName = "octest/SimpleFieldsAndMethods.class";
         buf = Utils.pullBytes(fName);
-        ce = new OcelotClass(buf, fName);
+        ce = new OCKlass(buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
         assertEquals("Minor version should be 0", 0, ce.getMinor());
@@ -77,7 +77,7 @@ public class TestClassReading {
         assertFalse(fName + " should not be annotation", ce.isAnnotation());
 
         ce.parseFields();
-        List<OcelotClass.CPField> fields = ce.getFields();
+        List<OCKlass.CPField> fields = ce.getFields();
         assertEquals(fName + " should have 1 field", 1, fields.size());
         int idx = fields.get(0).getNameIndex();
         assertEquals(fName + " should have a field called a", "a", ce.getCPEntry(idx).getStr());
@@ -85,9 +85,9 @@ public class TestClassReading {
         assertEquals(fName + " should have a field called a of type I", "I", ce.getCPEntry(idx).getStr());
 
         ce.parseMethods();
-        List<OcelotClass.CPMethod> methods = ce.getMethods();
+        List<OCKlass.CPMethod> methods = ce.getMethods();
         assertEquals(fName + " should have 2 methods", 2, methods.size());
-        OcelotClass.CPMethod init = methods.get(0);
+        OCKlass.CPMethod init = methods.get(0);
         idx = init.getNameIndex();
         assertEquals(fName + " should have a method called <init>", "<init>", ce.getCPEntry(idx).getStr());
         idx = init.getDescIndex();
@@ -102,14 +102,14 @@ public class TestClassReading {
     public void check_names() throws IOException, ClassNotFoundException {
         String fName = "Println.class";
         buf = Utils.pullBytes(fName);
-        ce = new OcelotClass(buf, fName);
+        ce = new OCKlass(buf, fName);
         ce.parse();
         String clzName = ce.className();
         assertEquals("kathik/Println", clzName);
 
         fName = "octest/SimpleFieldsAndMethods.class";
         buf = Utils.pullBytes(fName);
-        ce = new OcelotClass(buf, fName);
+        ce = new OCKlass(buf, fName);
         ce.parse();
         clzName = ce.className();
         assertEquals("octest/SimpleFieldsAndMethods", clzName);
@@ -119,13 +119,13 @@ public class TestClassReading {
     public void simple_invoke() throws Exception {
         String fName = "SampleInvoke.class";
         buf = Utils.pullBytes(fName);
-        ce = new OcelotClass(buf, fName);
+        ce = new OCKlass(buf, fName);
         ce.parse();
         ClassRepository repo = new ClassRepository();
         repo.add(ce);
         InterpMain im = new InterpMain(repo);
 
-        OcelotClass.CPMethod meth = ce.getMethodByName("foo:()I"); // "main:([Ljava/lang/String;)V"
+        OCKlass.CPMethod meth = ce.getMethodByName("foo:()I"); // "main:([Ljava/lang/String;)V"
         JVMValue res = im.execMethod(meth);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
@@ -146,12 +146,12 @@ public class TestClassReading {
 
         String fName = "Println.class";
         buf = Utils.pullBytes(fName);
-        ce = OcelotClass.of(buf, fName);
+        ce = OCKlass.of(buf, fName);
 
         repo.add(ce);
         im = new InterpMain(repo);
 
-        OcelotClass.CPMethod meth = ce.getMethodByName("main:([Ljava/lang/String;)V");
+        OCKlass.CPMethod meth = ce.getMethodByName("main:([Ljava/lang/String;)V");
 
         assertNull("Hello World should execute", im.execMethod(meth));
     }
@@ -160,12 +160,12 @@ public class TestClassReading {
     public void simple_branching_executes() throws Exception {
         String fName = "optjava/bc/SimpleTests.class";
         buf = Utils.pullBytes(fName);
-        ce = OcelotClass.of(buf, fName);
+        ce = OCKlass.of(buf, fName);
 
         repo.add(ce);
         im = new InterpMain(repo);
 
-        OcelotClass.CPMethod meth = ce.getMethodByName("if_bc:()I");
+        OCKlass.CPMethod meth = ce.getMethodByName("if_bc:()I");
         JVMValue res = im.execMethod(meth);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
@@ -180,12 +180,12 @@ public class TestClassReading {
     public void simple_static_calls_executes() throws Exception {
         String fName = "octest/StaticCalls.class";
         buf = Utils.pullBytes(fName);
-        ce = OcelotClass.of(buf, fName);
+        ce = OCKlass.of(buf, fName);
 
         repo.add(ce);
         im = new InterpMain(repo);
 
-        OcelotClass.CPMethod meth = ce.getMethodByName("call1:()I"); // "main:([Ljava/lang/String;)V");
+        OCKlass.CPMethod meth = ce.getMethodByName("call1:()I"); // "main:([Ljava/lang/String;)V");
         JVMValue res = im.execMethod(meth);
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 23", 23, (int) res.value);
