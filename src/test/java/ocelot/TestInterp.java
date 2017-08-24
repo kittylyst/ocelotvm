@@ -5,7 +5,6 @@ import org.junit.Test;
 import java.util.Arrays;
 
 import static ocelot.Opcode.*;
-import ocelot.classfile.OCKlassParser;
 import ocelot.rt.ClassRepository;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -17,12 +16,11 @@ import org.junit.Ignore;
  */
 public class TestInterp {
 
-    private static InterpMain im = new InterpMain(new ClassRepository());
-    private ClassRepository repo = new ClassRepository();
-
+    private InterpMain im;
+    
     @Before
-    public void init() {
-        repo = new ClassRepository();
+    public void setup() {
+        im = new InterpMain(ClassRepository.of());
     }
 
     // General form of a simple test case should be:
@@ -159,16 +157,15 @@ public class TestInterp {
     @Test
     @Ignore
     public void TestIntIfEqPrim() {
-        InterpMain vm = new InterpMain(new ClassRepository());
         byte[] buffy = {ICONST_1.B(), ICONST_1.B(), IADD.B(), ICONST_2.B(), IF_ICMPEQ.B(), (byte) 0, (byte) 11, ICONST_4.B(), GOTO.B(), (byte) 0, (byte) 12, ICONST_3.B(), IRETURN.B()};
 
-        JVMValue res = vm.execMethod("", "main:()V", buffy, new LocalVars());
+        JVMValue res = im.execMethod("", "main:()V", buffy, new LocalVars());
 
         assertEquals(JVMType.I, res.type);
         assertEquals(2, ((int) res.value));
 
         byte[] buffy2 = {ICONST_1.B(), ICONST_1.B(), IADD.B(), ICONST_3.B(), IF_ICMPEQ.B(), (byte) 0, (byte) 11, ICONST_4.B(), GOTO.B(), (byte) 0, (byte) 12, ICONST_3.B(), IRETURN.B()};
-        res = vm.execMethod("", "main:()V", buffy2, new LocalVars());
+        res = im.execMethod("", "main:()V", buffy2, new LocalVars());
 
         assertEquals(JVMType.I, res.type);
         assertEquals(2, ((int) res.value));

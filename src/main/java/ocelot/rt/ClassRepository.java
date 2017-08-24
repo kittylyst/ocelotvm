@@ -24,7 +24,16 @@ public final class ClassRepository {
     private final ConcurrentMap<String, OCKlass> loadedClasses = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, OCMethod> methodCache = new ConcurrentHashMap<>();
 
-    public ClassRepository() {
+    private ClassRepository() {
+    }
+
+    public static ClassRepository of() {
+        final ClassRepository out = new ClassRepository();
+        // FIXME Object::<init> needs to be in the method cache.
+        OCMethod m = OCMethod.OBJ_INIT;
+        out.methodCache.put(m.getClassName() + "." + m.getNameAndType(), m);
+        
+        return out;
     }
 
     // TEST: Put Object & String in the cache
@@ -43,12 +52,11 @@ public final class ClassRepository {
     public OCMethod lookupMethod(final String className, final short cpIndex) {
         OCKlass klass = loadedClasses.get(className);
         String otherMethodName = klass.getMethodNameByCPIndex(cpIndex);
-        
+
         return methodCache.get(otherMethodName);
-        
+
         // FIXME Fully qualified name... 
 //        return clz.getMethodByName(methName);
-
 //        CPEntry cpe = klass.getCPEntry(cpIndex);
 //        String methName = klass.resolveAsString(cpe.getIndex());
 //        return methodCache.get(methName);

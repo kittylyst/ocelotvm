@@ -9,21 +9,21 @@ import ocelot.classfile.OCKlassParser;
  */
 public class JVMObj {
 
-    static JVMObj of(String klzStr, long andIncrement) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    static JVMObj of(OCKlass klass, long id) {
+        return new JVMObj(klass, id);
     }
     private final OCObjMeta mark = new OCObjMeta();
-    private final OCKlassParser meta;
+    private final OCKlass klass;
     private final long id; 
     
-    private JVMObj(OCKlassParser klass, long id_) {
-        meta = klass;
+    private JVMObj(OCKlass klass, long id_) {
+        this.klass = klass;
         id = id_;
     }
 
     @Override
     public String toString() {
-        return "JVMObj{" + "mark=" + mark + ", meta=" + meta + ", id=" + id + '}';
+        return "JVMObj{" + "mark=" + mark + ", meta=" + klass + ", id=" + id + '}';
     }
 
     public long getId() {
@@ -34,9 +34,8 @@ public class JVMObj {
         return mark;
     }
 
-    public OCKlassParser getMeta() {
-        return meta;
+    public OCKlass getKlass() {
+        return klass;
     }
-    
     
 }

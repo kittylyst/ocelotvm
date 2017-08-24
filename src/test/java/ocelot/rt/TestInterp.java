@@ -4,6 +4,7 @@ import ocelot.*;
 import ocelot.classfile.OCKlassParser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -13,8 +14,14 @@ import org.junit.Test;
 public class TestInterp {
 
     private InterpMain im;
-    private final ClassRepository repo = new ClassRepository();
+    private ClassRepository repo;
 
+    @Before
+    public void setup() {
+        repo = ClassRepository.of();
+    }
+
+    
     private byte[] buf;
 
     @Test

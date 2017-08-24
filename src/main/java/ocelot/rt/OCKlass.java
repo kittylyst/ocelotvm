@@ -11,12 +11,14 @@ import java.util.Map;
 public class OCKlass {
 
     private final String name;
+    private final String superClass;
     private final Map<String, OCMethod> methodsByName = new HashMap<>();
     private final Map<Short, String> klassNamesByIndex = new HashMap<>();
     private final Map<Short, String> methodNamesByIndex = new HashMap<>();
 
     public OCKlass(String className) {
         name = className;
+        superClass = null;
     }
 
     public void addDefinedMethod(OCMethod m) {
@@ -33,10 +35,6 @@ public class OCKlass {
 
     public OCMethod getMethodByName(String nameAndType) {
         return methodsByName.get(nameAndType);
-    }
-
-    public long allocateObj() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public Collection<OCMethod> getMethods() {

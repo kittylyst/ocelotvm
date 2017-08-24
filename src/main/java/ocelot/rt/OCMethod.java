@@ -1,5 +1,7 @@
 package ocelot.rt;
 
+import static ocelot.Opcode.*;
+
 /**
  *
  * @author ben
@@ -12,6 +14,10 @@ public class OCMethod {
     private final String signature;
     private int numParams = -1;
 
+    private static final byte[] JUST_RETURN = {RETURN.B()};
+    
+    public static final OCMethod OBJ_INIT = new OCMethod("java/lang/Object", "()V", "<init>:()V", JUST_RETURN);
+    
     public OCMethod(final String klassName, final String sig, final String nameType, final byte[] buf) {
         signature = sig;
         nameAndType = nameType;

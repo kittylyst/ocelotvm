@@ -11,13 +11,14 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author ben
  */
 public class JVMHeap {
+
     private static final AtomicLong objCounter = new AtomicLong(1L);
     private List<JVMObj> heap = new LinkedList<>();
 
-    public JVMObj newObj(String klzStr) {
-        JVMObj o = JVMObj.of(klzStr, objCounter.getAndIncrement());
+    public long allocateObj(OCKlass klass) {
+        JVMObj o = JVMObj.of(klass, objCounter.getAndIncrement());
         heap.add(o);
-        return o;
+        return o.getId();
     }
 
     public JVMObj findObject(long id) {
@@ -27,24 +28,23 @@ public class JVMHeap {
         }
         return null;
     }
- 
+
     // FIXME Synchronization
     public void runGC() {
         // Clear the mark bit
         for (JVMObj o : heap) {
             o.getMark().setLive(false);
         }
-        
+
         // Scan from roots
         // FIXME
-        
         // Sweep
         for (JVMObj o : heap) {
             if (!o.getMark().isLive()) {
                 // Remove dead object
             }
         }
-        
+
     }
-    
+
 }

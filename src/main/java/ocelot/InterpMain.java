@@ -17,7 +17,7 @@ public final class InterpMain {
     private final ClassRepository repo;
 
     private final JVMHeap heap = new JVMHeap();
-    
+
     public InterpMain(ClassRepository classes) {
         repo = classes;
     }
@@ -245,7 +245,7 @@ public final class InterpMain {
                 case NEW:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
                     OCKlass klass = repo.lookupKlass(currentKlass, (short) cpLookup);
-                    eval.push(new JVMValue(JVMType.A, klass.allocateObj()));
+                    eval.push(new JVMValue(JVMType.A, heap.allocateObj(klass)));
                     break;
                 case NOP:
                     break;
@@ -298,7 +298,9 @@ public final class InterpMain {
         }
         withVars.setup(toPass);
 
-        eval.push(execMethod(toBeCalled, withVars));
+        JVMValue val = execMethod(toBeCalled, withVars);
+        if (val != null)
+            eval.push(val);
     }
 
 }
