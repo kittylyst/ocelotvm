@@ -1,8 +1,10 @@
 package ocelot;
 
-import ocelot.classfile.OCKlass;
+import ocelot.classfile.OCKlassParser;
 import ocelot.rt.ClassRepository;
 import ocelot.rt.JVMHeap;
+import ocelot.rt.OCKlass;
+import ocelot.rt.OCMethod;
 
 /**
  *
@@ -36,12 +38,12 @@ public final class InterpMain {
         }
     }
 
-    public JVMValue execMethod(final OCKlass.CPMethod meth) {
-        return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBuf(), new LocalVars());
+    public JVMValue execMethod(final OCMethod meth) {
+        return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBytecode(), new LocalVars());
     }
 
-    public JVMValue execMethod(final OCKlass.CPMethod meth, final LocalVars lvt) {
-        return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBuf(), lvt);
+    public JVMValue execMethod(final OCMethod meth, final LocalVars lvt) {
+        return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBytecode(), lvt);
     }
 
     JVMValue execMethod(final String klassName, final String desc, final byte[] instr, final LocalVars lvt) {
@@ -62,7 +64,7 @@ public final class InterpMain {
             }
             byte num = op.numParams();
             JVMValue v, v2, ret;
-            OCKlass.CPMethod toBeCalled;
+            OCKlassParser.CPMethod toBeCalled;
             int paramCount, jumpTo, cpLookup;
             LocalVars withVars;
             JVMValue[] toPass;
@@ -206,11 +208,11 @@ public final class InterpMain {
                     break;
                 case INVOKESPECIAL:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    dispatchInvoke(repo.lookupMethodCP(currentKlass, (short) cpLookup), eval, true);
+                    dispatchInvoke(repo.lookupMethod(currentKlass, (short) cpLookup), eval, true);
                     break;
                 case INVOKESTATIC:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    dispatchInvoke(repo.lookupMethodCP(currentKlass, (short) cpLookup), eval, false);
+                    dispatchInvoke(repo.lookupMethod(currentKlass, (short) cpLookup), eval, false);
                     break;
                 case IOR:
                     eval.ior();
@@ -242,7 +244,7 @@ public final class InterpMain {
                     break;
                 case NEW:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OCKlass klass = repo.lookupKlassCP(currentKlass, (short) cpLookup);
+                    OCKlass klass = repo.lookupKlass(currentKlass, (short) cpLookup);
                     eval.push(new JVMValue(JVMType.A, klass.allocateObj()));
                     break;
                 case NOP:
@@ -285,7 +287,7 @@ public final class InterpMain {
         }
     }
 
-    public void dispatchInvoke(OCKlass.CPMethod toBeCalled, EvaluationStack eval, boolean isInstance) {
+    public void dispatchInvoke(OCMethod toBeCalled, EvaluationStack eval, boolean isInstance) {
         int paramCount = toBeCalled.numParams();
         if (isInstance)
             paramCount++;

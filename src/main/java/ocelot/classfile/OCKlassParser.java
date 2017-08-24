@@ -6,13 +6,15 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import ocelot.rt.OCKlass;
+import ocelot.rt.OCMethod;
 import org.objectweb.asm.ClassReader;
 
 /**
  *
  * @author ben
  */
-public final class OCKlass {
+public final class OCKlassParser {
 
     private final byte[] clzBytes;
     private final String filename;
@@ -32,8 +34,6 @@ public final class OCKlass {
     private CPField[] fields;
     private CPMethod[] methods;
     private CPAttr[] attributes;
-
-    private final Map<String, CPMethod> methLookup = new HashMap<>();
 
     public static final int ACC_PUBLIC = 0x0001;      // Declared public; may be accessed from outside its package.
     public static final int ACC_PRIVATE = 0x0002;      // Declared private; usable only within the defining class.
@@ -58,7 +58,7 @@ public final class OCKlass {
     public static final int ACC_ABSTRACT_M = 0x0400;       // (Method) Declared abstract; no implementation is provided.
     public static final int ACC_STRICT = 0x0800;       // (Method) Declared strictfp; floating-point mode is FP-strict.
 
-    OCKlass(byte[] buf, String fName) {
+    OCKlassParser(byte[] buf, String fName) {
         filename = fName;
         clzBytes = buf;
     }
@@ -90,9 +90,9 @@ public final class OCKlass {
     }
 
     public static OCKlass of(byte[] buf, String fName) throws ClassNotFoundException {
-        OCKlass out = new OCKlass(buf, fName);
-        out.parse();
-        return out;
+        OCKlassParser self = new OCKlassParser(buf, fName);
+        self.parse();
+        return self.klass();
     }
 
     void parseHeader() {
@@ -156,9 +156,9 @@ public final class OCKlass {
                 case FIELDREF: // Field reference: two uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                 case METHODREF: // Method reference: two uint16s within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                 case INTERFACE_METHODREF: // Interface method reference: 2 uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
-                    int cRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    int nameAndTypeRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i + 1, tag, new Ref(cRef), new Ref(nameAndTypeRef));
+                    int classIndex = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+                    int nameAndTypeIndex = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+                    item = CPEntry.of(i + 1, tag, new Ref(classIndex), new Ref(nameAndTypeIndex));
                     break;
                 case NAMEANDTYPE: // Name and type descriptor: 2 uint16 to UTF-8 strings, 1st representing a name (identifier), 2nd a specially encoded type descriptor
                     int nameRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
@@ -205,12 +205,30 @@ public final class OCKlass {
 
     }
 
-    public CPMethod getMethodByName(String nameAndType) {
-        return methLookup.get(nameAndType);
-    }
+    private OCKlass klass() {
+        final OCKlass out = new OCKlass(className());
+        for (CPMethod cpm : methods) {
+            OCMethod ocm = new OCMethod(className(), cpm.signature, cpm.nameAndType, cpm.buf);
+            out.addDefinedMethod(ocm);
+        }
 
-    public long allocateObj() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        ENTRIES:
+//        for (CPEntry cpe : items) {
+//            if (cpe.getType() != CPType.METHODREF) {
+//                continue ENTRIES;
+//            }
+//            int classIndex = cpe.getRef().getOther();
+//            String className = resolveAsString(classIndex);
+//            int nameTypeIndex = cpe.getRef2().getOther();
+//            String nameAndType = resolveAsString(nameTypeIndex);
+//            if (ocm.getClassName().equals(className) && ocm.getNameAndType().equals(nameAndType)) {
+//
+//                continue METHODS;
+//            }
+//        }
+        
+        
+        return out;
     }
 
     class CPBase {
@@ -226,7 +244,7 @@ public final class OCKlass {
             nameIndex = name_idx;
             descIndex = desc_idx;
             attrs = new CPAttr[attrCount];
-            className = OCKlass.this.className();
+            className = OCKlassParser.this.className();
         }
 
         public int getFlags() {
@@ -272,12 +290,11 @@ public final class OCKlass {
         private byte[] buf;
         private final String nameAndType;
         private final String signature;
-        private int numParams = -1;
 
         CPMethod(int mFlags, int nameIdx, int descIdx, int attrCount) {
             super(mFlags, nameIdx, descIdx, attrCount);
-            signature = OCKlass.this.resolveAsString(descIndex);
-            nameAndType = OCKlass.this.resolveAsString(nameIndex) + ":" + OCKlass.this.resolveAsString(descIndex);
+            signature = OCKlassParser.this.resolveAsString(descIndex);
+            nameAndType = OCKlassParser.this.resolveAsString(nameIndex) + ":" + OCKlassParser.this.resolveAsString(descIndex);
         }
 
         @Override
@@ -289,42 +306,8 @@ public final class OCKlass {
             buf = b;
         }
 
-        public byte[] getBuf() {
+        byte[] getBuf() {
             return buf;
-        }
-
-        public String getNameAndType() {
-            return nameAndType;
-        }
-
-        public int numParams() {
-            if (numParams > -1)
-                return numParams;
-            numParams = 0;
-            OUTER: for (char c : signature.toCharArray()) {
-                switch (c) {
-                    case '(':
-                        break;
-                    case 'Z':
-                    case 'B':
-                    case 'S':
-                    case 'C':
-                    case 'I':
-                    case 'J':
-                    case 'F':
-                    case 'D':
-                        numParams++;
-                        break;
-                    case 'L':
-                        // FIXME Parse type
-                        throw new IllegalStateException("Class parameters not implemented yet");
-                    case ')':
-                        break OUTER;
-                    default:
-                        throw new IllegalStateException("Saw illegal char: "+ c +" as type descriptors");
-                }
-            }
-            return numParams;
         }
     }
 
@@ -344,9 +327,6 @@ public final class OCKlass {
             }
 
             methods[idx] = m;
-        }
-        for (CPMethod m : methods) {
-            methLookup.put(m.getNameAndType(), m);
         }
     }
 
@@ -559,14 +539,14 @@ public final class OCKlass {
     }
 
     // Maybe some useful techniques in ASM ?
-    public OCKlass scan(String cName) throws IOException {
+    public OCKlassParser scan(String cName) throws IOException {
         final Path clzPath = classNameToPath(cName);
         final byte[] buf = Files.readAllBytes(clzPath);
-        OCKlass out = null;
+        OCKlassParser out = null;
         try (final InputStream in = Files.newInputStream(clzPath)) {
             try {
                 final ClassReader cr = new ClassReader(in);
-                out = new OCKlass(buf, clzPath.toString());
+                out = new OCKlassParser(buf, clzPath.toString());
             } catch (Exception e) {
                 throw new IOException("Could not read class file " + clzPath, e);
             }

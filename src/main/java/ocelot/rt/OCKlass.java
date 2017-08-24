@@ -12,17 +12,20 @@ import java.util.Map;
 public class OCKlass {
 
     private final String name;
-    private final Map<String, OCMethod> methLookup = new HashMap<>();
+    private final Map<String, OCMethod> methodsByName = new HashMap<>();
+    private final Map<Integer, OCMethod> methodsByIndex = new HashMap<>();
 
-    public OCKlass(String className, List<OCMethod> methods) {
+    public OCKlass(String className) {
         name = className;
-        for (OCMethod m : methods) {
-            methLookup.put(m.getNameAndType(), m);
-        }
     }
-    
+
+    public void addDefinedMethod(OCMethod m) {
+        methodsByName.put(m.getNameAndType(), m);
+//        methodsByIndex.put(index, m);
+    }
+
     public OCMethod getMethodByName(String nameAndType) {
-        return methLookup.get(nameAndType);
+        return methodsByName.get(nameAndType);
     }
 
     public long allocateObj() {
@@ -30,7 +33,7 @@ public class OCKlass {
     }
 
     public Collection<OCMethod> getMethods() {
-        return methLookup.values();
+        return methodsByName.values();
     }
 
     public String getName() {

@@ -8,7 +8,6 @@ package ocelot.rt;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import ocelot.classfile.CPEntry;
-import ocelot.classfile.OCKlass;
 
 /**
  * Holds all the loaded classes to date. Operations should be concurrent safe so
@@ -16,16 +15,15 @@ import ocelot.classfile.OCKlass;
  *
  * @author ben
  */
-public class ClassRepository {
+public final class ClassRepository {
 
     public static final String OBJSIG = "Ljava/lang/Object;";
     public static final String STRSIG = "Ljava/lang/String;";
 
 //    private static final ConcurrentMap<String, JVMKlass> loadedClasses = new ConcurrentHashMap<>();
-
     private final ConcurrentMap<String, OCKlass> loadedClasses = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, OCKlass.CPMethod> methodCache = new ConcurrentHashMap<>();
-    
+    private final ConcurrentMap<String, OCMethod> methodCache = new ConcurrentHashMap<>();
+
     public ClassRepository() {
     }
 
@@ -42,24 +40,32 @@ public class ClassRepository {
         return loadedClasses.get(toCreate);
     }
 
-    public OCKlass.CPMethod lookupMethodCP(final String clzName, short entry) {
-        OCKlass clz = loadedClasses.get(clzName);
-        CPEntry cpe = clz.getCPEntry(entry);
-        String methName = clz.resolveAsString(cpe.getIndex());
-        return methodCache.get(methName);
+    public OCMethod lookupMethod(final String className, final short cpIndex) {
+        OCKlass klass = loadedClasses.get(className);
+        return klass.getMethodByCPIndex(cpIndex);
         // FIXME Fully qualified name... 
 //        return clz.getMethodByName(methName);
+
+//        CPEntry cpe = klass.getCPEntry(cpIndex);
+//        String methName = klass.resolveAsString(cpe.getIndex());
+//        return methodCache.get(methName);
     }
 
-    public void add(OCKlass ce) {
-        loadedClasses.put(ce.className(), ce);
-        for (OCKlass.CPMethod m : ce.getMethods()) {
-            methodCache.put(m.getClassName() +"."+ m.getNameAndType(), m);
+    public void add(OCKlass klass) {
+        loadedClasses.put(klass.getName(), klass);
+        for (OCMethod m : klass.getMethods()) {
+            methodCache.put(m.getClassName() + "." + m.getNameAndType(), m);
         }
     }
 
-    public OCKlass lookupKlassCP(String currentKlass, short s) {
-        return null;
+    public OCKlass lookupKlass(final String className, final short cpIndex) {
+        OCKlass klass = loadedClasses.get(className);
+        return klass.getKlassByCPIndex(cpIndex);
+//        CPEntry cpe = klass.getCPEntry(cpIndex);
+//        String klassName = klass.resolveAsString(cpe.getIndex());
+//
+//        OCKlass out = loadedClasses.get(klassName);
+//        return out;
     }
 
 }

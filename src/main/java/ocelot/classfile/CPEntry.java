@@ -1,5 +1,7 @@
 package ocelot.classfile;
 
+import java.util.Objects;
+
 /**
  *
  * @author ben
@@ -60,7 +62,7 @@ public final class CPEntry {
     public int getIndex() {
         return index;
     }
-    
+        
     @Override
     public String toString() {
         return "CPEntry{" + "type=" + type + ", num=" + num + ", str=" + str + ", ref=" + ref + ", ref2=" + ref2 + '}';

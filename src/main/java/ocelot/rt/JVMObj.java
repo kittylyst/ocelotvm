@@ -1,6 +1,6 @@
 package ocelot.rt;
 
-import ocelot.classfile.OCKlass;
+import ocelot.classfile.OCKlassParser;
 
 /**
  * This class should be public to allow the new opcode to create it
@@ -13,10 +13,10 @@ public class JVMObj {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     private final OCObjMeta mark = new OCObjMeta();
-    private final OCKlass meta;
+    private final OCKlassParser meta;
     private final long id; 
     
-    private JVMObj(OCKlass klass, long id_) {
+    private JVMObj(OCKlassParser klass, long id_) {
         meta = klass;
         id = id_;
     }
@@ -34,7 +34,7 @@ public class JVMObj {
         return mark;
     }
 
-    public OCKlass getMeta() {
+    public OCKlassParser getMeta() {
         return meta;
     }
     

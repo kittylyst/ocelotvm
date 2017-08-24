@@ -5,6 +5,7 @@ package ocelot.rt;
  * @author ben
  */
 public class OCMethod {
+
     private final String className;
     private final String nameAndType;
     private final byte[] bytecode;
@@ -24,6 +25,10 @@ public class OCMethod {
 
     public String getNameAndType() {
         return nameAndType;
+    }
+
+    public String getSignature() {
+        return signature;
     }
 
     public int numParams() {

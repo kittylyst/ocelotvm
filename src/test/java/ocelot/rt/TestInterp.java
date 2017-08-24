@@ -100,7 +100,9 @@ public class TestInterp {
         String fName = "SampleInvoke.class";
         buf = Utils.pullBytes(fName);
         OCKlass klass = OCKlassParser.of(buf, fName);
+        
         repo.add(klass);
+        im = new InterpMain(repo);
 
         OCMethod meth = klass.getMethodByName("foo:()I");
         JVMValue res = im.execMethod(meth);
