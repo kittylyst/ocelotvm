@@ -107,7 +107,7 @@ public final class OCKlassParser {
 
     void parseConstantPool() throws ClassNotFoundException {
         items = new CPEntry[poolItemCount - 1];
-        for (int i = 0; i < poolItemCount - 1; i++) {
+        for (short i = 1; i < poolItemCount; i++) {
             int entry = clzBytes[current++] & 0xff;
             CPType tag = table[entry];
             if (tag == null) {
@@ -121,54 +121,54 @@ public final class OCKlassParser {
                 case UTF8: // String prefixed by a uint16 indicating the number of bytes in the encoded string which immediately follows
                     int len = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     String str = new String(clzBytes, current, len, Charset.forName("UTF8"));
-                    item = CPEntry.of(i + 1, tag, str);
+                    item = CPEntry.of(i, tag, str);
                     current += len;
                     break;
                 case INTEGER: // Integer: a signed 32-bit two's complement number in big-endian format
                     int i2 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i + 1, tag, i2);
+                    item = CPEntry.of(i, tag, i2);
                     break;
                 case FLOAT: // Float: a 32-bit single-precision IEEE 754 floating-point number
                     int i3 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     float f = Float.intBitsToFloat(i3);
-                    item = CPEntry.of(i + 1, tag, f);
+                    item = CPEntry.of(i, tag, f);
                     break;
                 case LONG: // Long: a signed 64-bit two's complement number in big-endian format (takes two slots in the constant pool table)
                     int i4 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     int i5 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     long l = ((long) i4 << 32) + (long) i5;
-                    item = CPEntry.of(i + 1, tag, l);
+                    item = CPEntry.of(i, tag, l);
                     break;
                 case DOUBLE: // Double: a 64-bit double-precision IEEE 754 floating-point number (takes two slots in the constant pool table)
                     i4 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     i5 = ((int) clzBytes[current++] << 24) + ((int) clzBytes[current++] << 16) + ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     l = ((long) i4 << 32) + (long) i5;
-                    item = CPEntry.of(i + 1, tag, Double.longBitsToDouble(l));
+                    item = CPEntry.of(i, tag, Double.longBitsToDouble(l));
                     break;
                 case CLASS: // Class reference: an uint16 within the constant pool to a UTF-8 string containing the fully qualified class name
                     int ref = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i + 1, tag, new Ref(ref));
+                    item = CPEntry.of(i, tag, new Ref(ref));
                     break;
                 case STRING: // String reference: an uint16 within the constant pool to a UTF-8 string
                     int ref2 = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i + 1, tag, new Ref(ref2));
+                    item = CPEntry.of(i, tag, new Ref(ref2));
                     break;
                 case FIELDREF: // Field reference: two uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                 case METHODREF: // Method reference: two uint16s within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                 case INTERFACE_METHODREF: // Interface method reference: 2 uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                     int classIndex = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     int nameAndTypeIndex = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i + 1, tag, new Ref(classIndex), new Ref(nameAndTypeIndex));
+                    item = CPEntry.of(i, tag, new Ref(classIndex), new Ref(nameAndTypeIndex));
                     break;
                 case NAMEANDTYPE: // Name and type descriptor: 2 uint16 to UTF-8 strings, 1st representing a name (identifier), 2nd a specially encoded type descriptor
                     int nameRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     int typeRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i + 1, tag, new Ref(nameRef), new Ref(typeRef));
+                    item = CPEntry.of(i, tag, new Ref(nameRef), new Ref(typeRef));
                     break;
                 default:
                     throw new ClassNotFoundException("Reached impossible Constant Pool Tag.");
             }
-            items[i] = item;
+            items[i - 1] = item;
         }
     }
 
@@ -212,22 +212,26 @@ public final class OCKlassParser {
             out.addDefinedMethod(ocm);
         }
 
-//        ENTRIES:
-//        for (CPEntry cpe : items) {
-//            if (cpe.getType() != CPType.METHODREF) {
-//                continue ENTRIES;
-//            }
-//            int classIndex = cpe.getRef().getOther();
-//            String className = resolveAsString(classIndex);
-//            int nameTypeIndex = cpe.getRef2().getOther();
-//            String nameAndType = resolveAsString(nameTypeIndex);
-//            if (ocm.getClassName().equals(className) && ocm.getNameAndType().equals(nameAndType)) {
-//
-//                continue METHODS;
-//            }
-//        }
-        
-        
+        for (CPEntry cpe : items) {
+            int classIndex;
+            String className;
+            switch (cpe.getType()) {
+                case METHODREF:
+                    classIndex = cpe.getRef().getOther();
+                    className = resolveAsString(classIndex);
+                    int nameTypeIndex = cpe.getRef2().getOther();
+                    String nameAndType = resolveAsString(nameTypeIndex);
+                    out.addCPMethodRef(cpe.getIndex(), className + "." + nameAndType);
+                    break;
+                case CLASS:
+                    classIndex = cpe.getRef().getOther();
+                    className = resolveAsString(classIndex);
+                    out.addCPKlassRef(cpe.getIndex(), className);
+                    break;
+            }
+
+        }
+
         return out;
     }
 

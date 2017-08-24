@@ -7,14 +7,14 @@ import java.util.Objects;
  * @author ben
  */
 public final class CPEntry {
-    private final int index;
+    private final short index;
     private final CPType type;
     private final Number num;
     private final String str;
     private final Ref ref;
     private final Ref ref2;
 
-    private CPEntry(int i, CPType t, Number n, String s, Ref r, Ref r2) {
+    private CPEntry(short i, CPType t, Number n, String s, Ref r, Ref r2) {
         index = i;
         type = t;
         num = n;
@@ -23,19 +23,27 @@ public final class CPEntry {
         ref2 = r2;
     }
 
-    public static CPEntry of(int i, CPType t, Number num) {
+    public static CPEntry of(short i, CPType t, Number num) {
         return new CPEntry(i, t, num, num.toString(), null, null);
     }
 
-    public static CPEntry of(int i, CPType t, String s) {
+    public static CPEntry of(short i, CPType t, String s) {
         return new CPEntry(i, t, null, s, null, null);
     }
 
-    public static CPEntry of(int i, CPType t, Ref r) {
+    // Class reference: an uint16 within the constant pool to a UTF-8 string containing the fully qualified class name
+    /**
+     *
+     * @param i
+     * @param t
+     * @param r
+     * @return 
+     */
+    public static CPEntry of(short i, CPType t, Ref r) {
         return new CPEntry(i, t, null, null, r, null);
     }
 
-    public static CPEntry of(int i, CPType t, Ref r, Ref r2) {
+    public static CPEntry of(short i, CPType t, Ref r, Ref r2) {
         return new CPEntry(i, t, null, null, r, r2);
     }
 
@@ -59,7 +67,7 @@ public final class CPEntry {
         return ref2;
     }
 
-    public int getIndex() {
+    public short getIndex() {
         return index;
     }
         

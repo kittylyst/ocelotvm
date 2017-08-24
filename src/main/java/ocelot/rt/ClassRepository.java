@@ -42,7 +42,10 @@ public final class ClassRepository {
 
     public OCMethod lookupMethod(final String className, final short cpIndex) {
         OCKlass klass = loadedClasses.get(className);
-        return klass.getMethodByCPIndex(cpIndex);
+        String otherMethodName = klass.getMethodNameByCPIndex(cpIndex);
+        
+        return methodCache.get(otherMethodName);
+        
         // FIXME Fully qualified name... 
 //        return clz.getMethodByName(methName);
 
@@ -60,7 +63,8 @@ public final class ClassRepository {
 
     public OCKlass lookupKlass(final String className, final short cpIndex) {
         OCKlass klass = loadedClasses.get(className);
-        return klass.getKlassByCPIndex(cpIndex);
+        String otherKlassName = klass.getKlassNameByCPIndex(cpIndex);
+        return loadedClasses.get(otherKlassName);
 //        CPEntry cpe = klass.getCPEntry(cpIndex);
 //        String klassName = klass.resolveAsString(cpe.getIndex());
 //

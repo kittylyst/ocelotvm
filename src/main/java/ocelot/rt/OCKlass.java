@@ -2,7 +2,6 @@ package ocelot.rt;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,7 +12,8 @@ public class OCKlass {
 
     private final String name;
     private final Map<String, OCMethod> methodsByName = new HashMap<>();
-    private final Map<Integer, OCMethod> methodsByIndex = new HashMap<>();
+    private final Map<Short, String> klassNamesByIndex = new HashMap<>();
+    private final Map<Short, String> methodNamesByIndex = new HashMap<>();
 
     public OCKlass(String className) {
         name = className;
@@ -21,7 +21,14 @@ public class OCKlass {
 
     public void addDefinedMethod(OCMethod m) {
         methodsByName.put(m.getNameAndType(), m);
-//        methodsByIndex.put(index, m);
+    }
+
+    public void addCPMethodRef(short index, String methodName) {
+        methodNamesByIndex.put(index, methodName);
+    }
+
+    public void addCPKlassRef(short index, String methodName) {
+        klassNamesByIndex.put(index, methodName);
     }
 
     public OCMethod getMethodByName(String nameAndType) {
@@ -40,11 +47,12 @@ public class OCKlass {
         return name;
     }
 
-    public OCMethod getMethodByCPIndex(short cpIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public String getMethodNameByCPIndex(short cpIndex) {
+        return methodNamesByIndex.get(cpIndex);
     }
 
-    public OCKlass getKlassByCPIndex(short cpIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public String getKlassNameByCPIndex(short cpIndex) {
+        return klassNamesByIndex.get(cpIndex);
     }
+
 }
