@@ -17,8 +17,8 @@ import ocelot.classfile.CPEntry;
  */
 public final class ClassRepository {
 
-    public static final String OBJSIG = "Ljava/lang/Object;";
-    public static final String STRSIG = "Ljava/lang/String;";
+    public static final String OBJSIG = "java/lang/Object";
+    public static final String STRSIG = "java/lang/String";
 
 //    private static final ConcurrentMap<String, JVMKlass> loadedClasses = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, OCKlass> loadedClasses = new ConcurrentHashMap<>();
@@ -34,15 +34,6 @@ public final class ClassRepository {
         out.methodCache.put(m.getClassName() + "." + m.getNameAndType(), m);
         
         return out;
-    }
-
-    // TEST: Put Object & String in the cache
-    static {
-//        JVMKlass.Bldr b = new JVMKlass.Bldr();
-//        JVMKlass obj = b.name(OBJSIG).parent(null).storage(0).build();
-//        loadedClasses.put(OBJSIG, obj);
-//        // Now String
-//        loadedClasses.put(STRSIG, b.name(STRSIG).parent(obj).storage(3).build());
     }
 
     public OCKlass newKlass(String toCreate) {

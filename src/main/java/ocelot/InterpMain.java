@@ -2,7 +2,7 @@ package ocelot;
 
 import ocelot.classfile.OCKlassParser;
 import ocelot.rt.ClassRepository;
-import ocelot.rt.JVMHeap;
+import ocelot.rt.SimpleLinkedJVMHeap;
 import ocelot.rt.OCKlass;
 import ocelot.rt.OCMethod;
 
@@ -16,7 +16,8 @@ public final class InterpMain {
 
     private final ClassRepository repo;
 
-    private final JVMHeap heap = new JVMHeap();
+    // FIXME Pluggable heap impls...
+    private final JVMStorage heap = new SimpleLinkedJVMHeap();
 
     public InterpMain(ClassRepository classes) {
         repo = classes;

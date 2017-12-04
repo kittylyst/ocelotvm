@@ -1,16 +1,17 @@
 package ocelot.rt;
 
+import ocelot.JVMStorage;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * The JVMHeap takes in object IDs (longs) such as are stored in JVMValue and
- * returns the actual object corresponding to the ID.
+ * The SimpleLinkedJVMHeap takes in object IDs (longs) such as are stored in JVMValue and
+ returns the actual object corresponding to the ID.
  * 
  * @author ben
  */
-public class JVMHeap {
+public class SimpleLinkedJVMHeap implements JVMStorage {
 
     private static final AtomicLong objCounter = new AtomicLong(1L);
     private List<JVMObj> heap = new LinkedList<>();
