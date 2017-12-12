@@ -1,6 +1,7 @@
 package ocelot;
 
 import static ocelot.JVMType.*;
+import static ocelot.JVMValue.entry;
 
 /**
  *
@@ -20,7 +21,7 @@ public final class LocalVars {
             throw new IllegalStateException("Wrong type " + localVar.type + " encountered at local var: " + (offset & 0xff) + " should be I");
 
         // FIXME Overflow...?
-        vars[offset & 0xff] = new JVMValue(I, amount + localVar.value);
+        vars[offset & 0xff] = entry(amount + (int)localVar.value);
     }
 
     JVMValue iload(byte b) {

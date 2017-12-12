@@ -1,6 +1,8 @@
 package ocelot;
 
 import java.util.Stack;
+import static ocelot.JVMValue.entry;
+import static ocelot.JVMValue.entryRef;
 
 /**
  *
@@ -9,7 +11,7 @@ import java.util.Stack;
 public class EvaluationStack extends Stack<JVMValue> {
 
     void iconst(int i) {
-        push(new JVMValue(JVMType.I, i));
+        push(entry(i));
     }
 
     void iadd() {
@@ -17,7 +19,7 @@ public class EvaluationStack extends Stack<JVMValue> {
         JVMValue ev2 = pop();
         // For a runtime checking interpreter - type checks would go here...
         int add = (int) ev1.value + (int) ev2.value;
-        push(new JVMValue(JVMType.I, add));
+        push(entry(add));
     }
 
     void idiv() {
@@ -25,7 +27,7 @@ public class EvaluationStack extends Stack<JVMValue> {
         JVMValue ev2 = pop();
         // For a runtime checking interpreter - type checks would go here...
         int div = (int) ev1.value / (int) ev2.value;
-        push(new JVMValue(JVMType.I, div));
+        push(entry(div));
     }
 
     void imul() {
@@ -33,7 +35,7 @@ public class EvaluationStack extends Stack<JVMValue> {
         JVMValue ev2 = pop();
         // For a runtime checking interpreter - type checks would go here...
         int mul = (int) ev1.value * (int) ev2.value;
-        push(new JVMValue(JVMType.I, mul));
+        push(entry(mul));
     }
 
     void isub() {
@@ -41,7 +43,7 @@ public class EvaluationStack extends Stack<JVMValue> {
         JVMValue ev2 = pop();
         // For a runtime checking interpreter - type checks would go here...
         int sub = (int) ev1.value - (int) ev2.value;
-        push(new JVMValue(JVMType.I, sub));
+        push(entry(sub));
     }
 
     void dup() {
@@ -51,7 +53,7 @@ public class EvaluationStack extends Stack<JVMValue> {
 
     void ineg() {
         JVMValue ev = pop();
-        push(new JVMValue(JVMType.I, -ev.value));
+        push(entry(-ev.value));
     }
 
     void iand() {
@@ -59,7 +61,7 @@ public class EvaluationStack extends Stack<JVMValue> {
         JVMValue ev2 = pop();
         // For a runtime checking interpreter - type checks would go here...
         int and = (int) ev1.value & (int) ev2.value;
-        push(new JVMValue(JVMType.I, and));
+        push(entry(and));
     }
 
     void ior() {
@@ -67,11 +69,11 @@ public class EvaluationStack extends Stack<JVMValue> {
         JVMValue ev2 = pop();
         // For a runtime checking interpreter - type checks would go here...
         int or = (int) ev1.value | (int) ev2.value;
-        push(new JVMValue(JVMType.I, or));
+        push(entry(or));
     }
 
     void aconst_null() {
-        push(new JVMValue(JVMType.A, 0L));
+        push(entryRef(0L));
     }
 
     void dupX1() {
@@ -81,4 +83,31 @@ public class EvaluationStack extends Stack<JVMValue> {
         push(ev2);
         push(ev1);
     }
+
+    void dconst(double d) {
+        push(entry(d));
+    }
+
+    void dadd() {
+        JVMValue ev1 = pop();
+        JVMValue ev2 = pop();
+        // For a runtime checking interpreter - type checks would go here...
+        double add = Double.longBitsToDouble(ev1.value) + Double.longBitsToDouble(ev2.value);
+        push(entry(add));
+    }
+
+    void i2d() {
+        JVMValue ev1 = pop();
+        double castTo = (double)ev1.value;
+        push(entry(castTo));
+    }
+
+    void dsub() {
+        JVMValue ev1 = pop();
+        JVMValue ev2 = pop();
+        // For a runtime checking interpreter - type checks would go here...
+        double sub = Double.longBitsToDouble(ev1.value) - Double.longBitsToDouble(ev2.value);
+        push(entry(sub));
+    }
+
 }

@@ -1,6 +1,7 @@
 package ocelot.rt;
 
 import ocelot.*;
+import static ocelot.JVMValue.entry;
 import ocelot.classfile.OCKlassParser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -76,8 +77,8 @@ public class TestInterp {
         meth = klass.getMethodByName("adder:(II)I");
         LocalVars lv = new LocalVars();
         JVMValue[] vars = new JVMValue[2];
-        vars[0] = new JVMValue(JVMType.I, 5L);
-        vars[1] = new JVMValue(JVMType.I, 7L);
+        vars[0] = entry(5);
+        vars[1] = entry(7);
         lv.setup(vars);
 
         res = im.execMethod(meth, lv);
