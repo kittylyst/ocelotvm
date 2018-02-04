@@ -17,6 +17,7 @@ public class OCKlass {
     private final Map<String, OCMethod> methodsByName = new HashMap<>();
     private final Map<Short, String> klassNamesByIndex = new HashMap<>();
     private final Map<Short, String> methodNamesByIndex = new HashMap<>();
+    private final Map<String, Long> staticFieldsByName = new HashMap<>();
 
     public OCKlass(InterpMain i, String className) {
         interpreter = i;
@@ -34,6 +35,10 @@ public class OCKlass {
 
     public void addCPKlassRef(short index, String methodName) {
         klassNamesByIndex.put(index, methodName);
+    }
+
+    public void addCPStaticField(String name) {
+        staticFieldsByName.put(name, 0L);
     }
 
     public OCMethod getMethodByName(String nameAndType) {
