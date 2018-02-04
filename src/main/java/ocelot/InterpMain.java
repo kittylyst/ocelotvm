@@ -23,7 +23,7 @@ public final class InterpMain {
 
     public InterpMain() {
     }
-    
+
     public InterpMain(ClassRepository classes) {
         repo = classes;
     }
@@ -47,7 +47,7 @@ public final class InterpMain {
     public static ClassRepository getRepo() {
         return repo;
     }
-    
+
     public JVMValue execMethod(final OCMethod meth) {
         return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBytecode(), new LocalVars());
     }
@@ -290,6 +290,7 @@ public final class InterpMain {
                     return null;
                 // Dummy implementation
                 case GETSTATIC:
+                case PUTSTATIC:
                 case INVOKEVIRTUAL:
                 case LDC:
                     System.out.print("Executing " + op + " with param bytes: ");

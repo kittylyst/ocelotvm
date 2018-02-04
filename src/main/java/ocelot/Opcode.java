@@ -73,6 +73,7 @@ public enum Opcode {
     NOP(0x00),
     POP(0x57),
     POP2(0x58),
+    PUTSTATIC(0xb3, 2),
     RET(0xa9, 1),
     RETURN(0xb1);    
 

@@ -57,11 +57,9 @@ public class OCKlass {
     }
 
     public void callClInit() {
-        // Locate the static to call
-        
-        // <clinit>
-        final OCMethod meth = methodsByName.get("<clinit>");
-        
+        // Locate static to call
+        final OCMethod meth = methodsByName.get("<clinit>:()V");
+        System.out.println(methodsByName);
         // Call it :)
         if (meth != null) {
             interpreter.execMethod(meth);
