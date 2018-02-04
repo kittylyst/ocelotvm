@@ -18,7 +18,7 @@ public class TestDoubleArithmetic {
 
     @Before
     public void setup() {
-        im = new InterpMain(ClassRepository.of());
+        im = new InterpMain();
     }
 
     @Test

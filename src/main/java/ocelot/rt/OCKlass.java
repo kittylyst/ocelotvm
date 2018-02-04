@@ -56,10 +56,11 @@ public class OCKlass {
         return klassNamesByIndex.get(cpIndex);
     }
 
-    public void callAllStatics() {
+    public void callClInit() {
         // Locate the static to call
         
-        final OCMethod meth = null; // <clinit>
+        // <clinit>
+        final OCMethod meth = methodsByName.get("<clinit>");
         
         // Call it :)
         if (meth != null) {

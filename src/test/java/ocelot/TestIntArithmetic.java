@@ -4,7 +4,6 @@ import org.junit.Test;
 
 
 import static ocelot.Opcode.*;
-import ocelot.rt.ClassRepository;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -19,7 +18,7 @@ public class TestIntArithmetic {
     
     @Before
     public void setup() {
-        im = new InterpMain(ClassRepository.of());
+        im = new InterpMain();
     }
 
     // General form of a simple test case should be:

@@ -15,11 +15,15 @@ public final class InterpMain {
 
     private static final Opcode[] table = new Opcode[256];
 
-    private final ClassRepository repo;
+    // Singleton ?
+    private static ClassRepository repo = ClassRepository.of();
 
     // FIXME Pluggable heap impls...
     private final JVMStorage heap = new SimpleLinkedJVMHeap();
 
+    public InterpMain() {
+    }
+    
     public InterpMain(ClassRepository classes) {
         repo = classes;
     }
@@ -40,6 +44,10 @@ public final class InterpMain {
         }
     }
 
+    public static ClassRepository getRepo() {
+        return repo;
+    }
+    
     public JVMValue execMethod(final OCMethod meth) {
         return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBytecode(), new LocalVars());
     }

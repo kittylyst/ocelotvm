@@ -2,7 +2,6 @@ package ocelot;
 
 import java.util.Arrays;
 import static ocelot.Opcode.*;
-import ocelot.rt.ClassRepository;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +16,7 @@ public class TestJumpBranch {
 
     @Before
     public void setup() {
-        im = new InterpMain(ClassRepository.of());
+        im = new InterpMain();
     }
 
     @Test
