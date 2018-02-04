@@ -54,7 +54,10 @@ public class OCKlass {
     }
 
     public void callAllStatics() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // Locate the static to call, <clinit>
+        
+        // Call it :)
+        
     }
 
 }
