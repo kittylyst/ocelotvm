@@ -7,12 +7,16 @@ import ocelot.*;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import static ocelot.classfile.CPType.*;
+import ocelot.rt.OCKlass;
+import ocelot.rt.OCMethod;
+import org.junit.Ignore;
 
 /**
  *
  * @author ben
  */
 public class TestClassReading {
+
     private OCKlassParser ce;
     private byte[] buf;
 
@@ -109,5 +113,20 @@ public class TestClassReading {
         clzName = ce.className();
         assertEquals("octest/SimpleFieldsAndMethods", clzName);
     }
-    
+
+    @Test
+    @Ignore // We need getstatic implemented before this will pass
+    public void check_clinit_runs() throws Exception {
+        String fName = "ClInit.class";
+        buf = Utils.pullBytes(fName);
+
+        InterpMain im = new InterpMain();
+        OCKlass klass = OCKlassParser.of(im, buf, "ClInit");
+
+        OCMethod meth = klass.getMethodByName("getTestMe:()I");
+        JVMValue res = im.execMethod(meth);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 42", 42, (int) res.value);
+    }
 }

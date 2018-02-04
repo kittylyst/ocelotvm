@@ -97,6 +97,7 @@ public final class OCKlassParser {
         OCKlassParser self = new OCKlassParser(interpreter, buf, fName);
         self.parse();
         OCKlass klass = self.klass(interpreter);
+        interpreter.getRepo().add(klass);
         klass.callClInit();
         return klass;
     }
