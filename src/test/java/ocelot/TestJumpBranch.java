@@ -1,17 +1,7 @@
 package ocelot;
 
 import java.util.Arrays;
-import static ocelot.Opcode.GOTO;
-import static ocelot.Opcode.IADD;
-import static ocelot.Opcode.ICONST_1;
-import static ocelot.Opcode.ICONST_2;
-import static ocelot.Opcode.IFNE;
-import static ocelot.Opcode.IINC;
-import static ocelot.Opcode.ILOAD;
-import static ocelot.Opcode.ILOAD_1;
-import static ocelot.Opcode.IRETURN;
-import static ocelot.Opcode.ISTORE;
-import static ocelot.Opcode.ISTORE_1;
+import static ocelot.Opcode.*;
 import ocelot.rt.ClassRepository;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
