@@ -14,10 +14,12 @@ public final class ClassRepository {
 
     public static final String OBJSIG = "java/lang/Object";
     public static final String STRSIG = "java/lang/String";
+    public static final String SYSSIG = "java/lang/System";
 
     private final ConcurrentMap<String, OCKlass> loadedClasses = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, OCMethod> methodCache = new ConcurrentHashMap<>();
-
+    private final ConcurrentMap<String, OCField> fieldCache = new ConcurrentHashMap<>();
+    
     private ClassRepository() {
     }
 
@@ -27,9 +29,19 @@ public final class ClassRepository {
         OCMethod m = OCMethod.OBJ_INIT;
         out.methodCache.put(m.getClassName() + "." + m.getNameAndType(), m);
 
+        // Add System
+        
+        
         return out;
     }
 
+//    private OCKlass makeSystem() {
+//        final OCKlass out = new OCKlass(SYSSIG);
+//        final OCField f = 
+//        out.addField(null);
+//        return out; 
+//    }
+    
     public OCKlass newKlass(String toCreate) {
         return loadedClasses.get(toCreate);
     }
@@ -39,18 +51,15 @@ public final class ClassRepository {
         String otherMethodName = klass.getMethodNameByCPIndex(cpIndex);
 
         return methodCache.get(otherMethodName);
-
-        // FIXME Fully qualified name... 
-//        return clz.getMethodByName(methName);
-//        CPEntry cpe = klass.getCPEntry(cpIndex);
-//        String methName = klass.resolveAsString(cpe.getIndex());
-//        return methodCache.get(methName);
     }
 
     public void add(OCKlass klass) {
         loadedClasses.put(klass.getName(), klass);
         for (OCMethod m : klass.getMethods()) {
             methodCache.put(m.getClassName() + "." + m.getNameAndType(), m);
+        }
+        for (OCField f : klass.getFields()) {
+            fieldCache.put(f.getKlass().getName() +"." + f.getName() +":"+ f.getType(), f);
         }
     }
 
@@ -62,6 +71,8 @@ public final class ClassRepository {
 
     public OCField lookupField(final String className, final short cpIndex) {
         OCKlass klass = loadedClasses.get(className);
-        return klass.getFieldByCPIndex(cpIndex);
+        String fieldName = klass.getFieldByCPIndex(cpIndex);
+        
+        return fieldCache.get(fieldName);
     }
 }

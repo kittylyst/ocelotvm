@@ -115,7 +115,7 @@ public class TestClassReading {
     }
 
     @Test
-    @Ignore // We need getstatic and putstatic implemented before this will pass
+//    @Ignore // We need getstatic and putstatic implemented before this will pass
     public void check_clinit_runs() throws Exception {
         String fName = "ClInit.class";
         buf = Utils.pullBytes(fName);

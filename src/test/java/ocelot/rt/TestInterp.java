@@ -6,6 +6,7 @@ import ocelot.classfile.OCKlassParser;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -26,6 +27,7 @@ public class TestInterp {
     private byte[] buf;
 
     @Test
+    @Ignore
     public void hello_world_loaded_from_file_executes() throws Exception {
         String fName = "Println.class";
         buf = Utils.pullBytes(fName);

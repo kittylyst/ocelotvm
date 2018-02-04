@@ -1,16 +1,13 @@
 package ocelot.classfile;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import ocelot.InterpMain;
 import ocelot.JVMType;
+import ocelot.rt.OCField;
 import ocelot.rt.OCKlass;
 import ocelot.rt.OCMethod;
-import org.objectweb.asm.ClassReader;
 
 /**
  *
@@ -19,7 +16,6 @@ import org.objectweb.asm.ClassReader;
 public final class OCKlassParser {
 
 //    private 
-    
     private final byte[] clzBytes;
     private final String filename;
 
@@ -164,9 +160,9 @@ public final class OCKlassParser {
                 case FIELDREF: // Field reference: two uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                 case METHODREF: // Method reference: two uint16s within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
                 case INTERFACE_METHODREF: // Interface method reference: 2 uint16 within the pool, 1st pointing to a Class reference, 2nd to a Name and Type descriptor
-                    int classIndex = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
+                    int cpIndex = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
                     int nameAndTypeIndex = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-                    item = CPEntry.of(i, tag, new Ref(classIndex), new Ref(nameAndTypeIndex));
+                    item = CPEntry.of(i, tag, new Ref(cpIndex), new Ref(nameAndTypeIndex));
                     break;
                 case NAMEANDTYPE: // Name and type descriptor: 2 uint16 to UTF-8 strings, 1st representing a name (identifier), 2nd a specially encoded type descriptor
                     int nameRef = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
@@ -216,19 +212,31 @@ public final class OCKlassParser {
     private OCKlass klass(InterpMain i) {
         final OCKlass out = new OCKlass(i, className());
         for (CPMethod cpm : methods) {
-            OCMethod ocm = new OCMethod(className(), cpm.signature, cpm.nameAndType, cpm.buf);
+            final OCMethod ocm = new OCMethod(className(), cpm.signature, cpm.nameAndType, cpm.buf);
             out.addDefinedMethod(ocm);
         }
 
+        for (CPField cpf : fields) {
+            final OCField ocf = new OCField(out, cpf.name, cpf.type, cpf.flags);
+            out.addDefinedField(ocf);
+        }
+        
         for (CPEntry cpe : items) {
-            int classIndex;
-            String className;
+            int classIndex, nameTypeIndex;
+            String className, nameAndType;
             switch (cpe.getType()) {
+                case FIELDREF:
+                    classIndex = cpe.getRef().getOther();
+                    className = resolveAsString(classIndex);
+                    nameTypeIndex = cpe.getRef2().getOther();
+                    nameAndType = resolveAsString(nameTypeIndex);
+                    out.addCPFieldRef(cpe.getIndex(), className + "." + nameAndType);
+                    break;
                 case METHODREF:
                     classIndex = cpe.getRef().getOther();
                     className = resolveAsString(classIndex);
-                    int nameTypeIndex = cpe.getRef2().getOther();
-                    String nameAndType = resolveAsString(nameTypeIndex);
+                    nameTypeIndex = cpe.getRef2().getOther();
+                    nameAndType = resolveAsString(nameTypeIndex);
                     out.addCPMethodRef(cpe.getIndex(), className + "." + nameAndType);
                     break;
                 case CLASS:
@@ -240,10 +248,9 @@ public final class OCKlassParser {
 
         }
 
-        for (CPField field: fields) {
-            if ((field.flags & ACC_STATIC) > 0) {
-                out.addCPStaticField(field.name);
-            }
+        for (CPField field : fields) {
+            OCField f = new OCField(out, field.name, field.type, field.flags);
+            out.addField(f);
         }
 
         return out;
@@ -587,7 +594,6 @@ public final class OCKlassParser {
 //        }
 //        return out;
 //    }
-
     public static Path classNameToPath(String classname) {
         return null;
     }

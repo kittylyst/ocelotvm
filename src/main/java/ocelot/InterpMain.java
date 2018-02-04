@@ -120,6 +120,12 @@ public final class InterpMain {
                 case DUP_X1:
                     eval.dupX1();
                     break;
+                case GETSTATIC:
+                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
+                    OCField f = repo.lookupField(klassName, (short) cpLookup);
+                    OCKlass fgKlass = f.getKlass();
+                    eval.push(fgKlass.getStaticField(f));
+                    break;
                 case GOTO:
                     current += 2 + ((int) instr[current] << 8) + (int) instr[current + 1];
                     break;
@@ -285,14 +291,14 @@ public final class InterpMain {
                     break;
                 case PUTSTATIC:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OCField field = repo.lookupField(klassName, (short)cpLookup);
+                    OCField field = repo.lookupField(klassName, (short) cpLookup);
                     OCKlass fKlass = field.getKlass();
                     JVMValue val = eval.pop();
                     fKlass.setStaticField(field.getName(), val);
+                    break;
                 case RETURN:
                     return null;
                 // Dummy implementation
-                case GETSTATIC:
                 case INVOKEVIRTUAL:
                 case LDC:
                     System.out.print("Executing " + op + " with param bytes: ");
