@@ -78,14 +78,11 @@ public class OCKlass {
     }
 
     public void callClInit() {
-        // Locate static to call
         final OCMethod meth = methodsByName.get("<clinit>:()V");
-        System.out.println(methodsByName);
-        // Call it :)
+        
         if (meth != null) {
             interpreter.execMethod(meth);
         }
-
     }
 
     public void setStaticField(String name, JVMValue val) {

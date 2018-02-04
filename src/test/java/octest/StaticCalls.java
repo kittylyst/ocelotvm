@@ -6,6 +6,8 @@ package octest;
  */
 public class StaticCalls {
 
+    private static int j;
+    
     public static void main(String[] args) {
         call3(46);
     }
@@ -26,6 +28,18 @@ public class StaticCalls {
         return call3(46);
     }
 
+    public static int getJ() {
+        return j;
+    }
+    
+    public static void incJ() {
+        j++;
+    }
+    
+    public static void setJ(int k) {
+        j = k;
+    }
+    
     public static int adder(int i, int j) {
         return i + j;
     }

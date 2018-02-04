@@ -23,7 +23,6 @@ public class TestInterp {
         repo = ClassRepository.of();
     }
 
-    
     private byte[] buf;
 
     @Test
@@ -90,6 +89,42 @@ public class TestInterp {
     }
 
     @Test
+    public void simple_calls_modify_static_fields() throws Exception {
+        String fName = "octest/StaticCalls.class";
+        buf = Utils.pullBytes(fName);
+        OCKlass klass = OCKlassParser.of(null, buf, fName);
+
+        repo.add(klass);
+        im = new InterpMain(repo);
+
+        OCMethod meth = klass.getMethodByName("setJ:(I)V");
+        LocalVars lvt = new LocalVars();
+        JVMValue[] vs = new JVMValue[1];
+        vs[0] = new JVMValue(JVMType.I, 13L);
+        lvt.setup(vs);
+        JVMValue res = im.execMethod(meth, lvt);
+
+        assertNull("Call to setter should be return null", res);
+
+        meth = klass.getMethodByName("getJ:()I");
+        res = im.execMethod(meth);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 13", 13, (int) res.value);
+
+        meth = klass.getMethodByName("incJ:()V");
+        res = im.execMethod(meth);
+        assertNull("Call to incJ() should be return null", res);
+
+        meth = klass.getMethodByName("getJ:()I");
+        res = im.execMethod(meth);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 14", 14, (int) res.value);
+
+    }
+
+    @Test
     public void simple_executes() throws Exception {
         String fName = "octest/Simple.class";
         buf = Utils.pullBytes(fName);
@@ -110,7 +145,7 @@ public class TestInterp {
         String fName = "SampleInvoke.class";
         buf = Utils.pullBytes(fName);
         OCKlass klass = OCKlassParser.of(null, buf, fName);
-        
+
         repo.add(klass);
         im = new InterpMain(repo);
 
