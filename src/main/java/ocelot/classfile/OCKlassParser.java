@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import ocelot.InterpMain;
+import ocelot.JVMType;
 import ocelot.rt.OCKlass;
 import ocelot.rt.OCMethod;
 import org.objectweb.asm.ClassReader;
@@ -239,6 +240,12 @@ public final class OCKlassParser {
 
         }
 
+        for (CPField field: fields) {
+            if ((field.flags & ACC_STATIC) > 0) {
+                out.addCPStaticField(field.name);
+            }
+        }
+
         return out;
     }
 
@@ -285,8 +292,22 @@ public final class OCKlassParser {
 
     public class CPField extends CPBase {
 
-        public CPField(int fFlags, int name_idx, int desc_idx, int attrCount) {
-            super(fFlags, name_idx, desc_idx, attrCount);
+        private JVMType type;
+        private int nameIdx;
+        private int descIdx;
+        private String name;
+
+        public CPField(int fFlags, int nameIdx, int descIdx, int attrCount) {
+            super(fFlags, nameIdx, descIdx, attrCount);
+            this.nameIdx = nameIdx;
+            this.descIdx = descIdx;
+
+            name = resolveAsString(nameIdx);
+            String desc = resolveAsString(descIdx);
+
+            type = JVMType.valueOf(desc);
+
+            System.out.println(name + " " + desc);
         }
 
         @Override
