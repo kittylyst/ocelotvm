@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import ocelot.InterpMain;
 import ocelot.rt.OCKlass;
 import ocelot.rt.OCMethod;
 import org.objectweb.asm.ClassReader;
@@ -16,6 +17,8 @@ import org.objectweb.asm.ClassReader;
  */
 public final class OCKlassParser {
 
+//    private 
+    
     private final byte[] clzBytes;
     private final String filename;
 
@@ -58,7 +61,8 @@ public final class OCKlassParser {
     public static final int ACC_ABSTRACT_M = 0x0400;       // (Method) Declared abstract; no implementation is provided.
     public static final int ACC_STRICT = 0x0800;       // (Method) Declared strictfp; floating-point mode is FP-strict.
 
-    OCKlassParser(byte[] buf, String fName) {
+    OCKlassParser(InterpMain i, byte[] buf, String fName) {
+//        interpreter = i;
         filename = fName;
         clzBytes = buf;
     }
@@ -89,10 +93,10 @@ public final class OCKlassParser {
 //        parseAttributes();
     }
 
-    public static OCKlass of(byte[] buf, String fName) throws ClassNotFoundException {
-        OCKlassParser self = new OCKlassParser(buf, fName);
+    public static OCKlass of(final InterpMain interpreter, byte[] buf, String fName) throws ClassNotFoundException {
+        OCKlassParser self = new OCKlassParser(interpreter, buf, fName);
         self.parse();
-        OCKlass klass = self.klass();
+        OCKlass klass = self.klass(interpreter);
         klass.callAllStatics();
         return klass;
     }
@@ -207,8 +211,8 @@ public final class OCKlassParser {
 
     }
 
-    private OCKlass klass() {
-        final OCKlass out = new OCKlass(className());
+    private OCKlass klass(InterpMain i) {
+        final OCKlass out = new OCKlass(i, className());
         for (CPMethod cpm : methods) {
             OCMethod ocm = new OCMethod(className(), cpm.signature, cpm.nameAndType, cpm.buf);
             out.addDefinedMethod(ocm);
@@ -545,20 +549,20 @@ public final class OCKlassParser {
     }
 
     // Maybe some useful techniques in ASM ?
-    public OCKlassParser scan(String cName) throws IOException {
-        final Path clzPath = classNameToPath(cName);
-        final byte[] buf = Files.readAllBytes(clzPath);
-        OCKlassParser out = null;
-        try (final InputStream in = Files.newInputStream(clzPath)) {
-            try {
-                final ClassReader cr = new ClassReader(in);
-                out = new OCKlassParser(buf, clzPath.toString());
-            } catch (Exception e) {
-                throw new IOException("Could not read class file " + clzPath, e);
-            }
-        }
-        return out;
-    }
+//    public OCKlassParser scan(String cName) throws IOException {
+//        final Path clzPath = classNameToPath(cName);
+//        final byte[] buf = Files.readAllBytes(clzPath);
+//        OCKlassParser out = null;
+//        try (final InputStream in = Files.newInputStream(clzPath)) {
+//            try {
+//                final ClassReader cr = new ClassReader(in);
+//                out = new OCKlassParser(buf, clzPath.toString());
+//            } catch (Exception e) {
+//                throw new IOException("Could not read class file " + clzPath, e);
+//            }
+//        }
+//        return out;
+//    }
 
     public static Path classNameToPath(String classname) {
         return null;

@@ -3,20 +3,23 @@ package ocelot.rt;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import ocelot.InterpMain;
 
 /**
  *
  * @author ben
  */
 public class OCKlass {
-
+    private final InterpMain interpreter;
+    
     private final String name;
     private final String superClass;
     private final Map<String, OCMethod> methodsByName = new HashMap<>();
     private final Map<Short, String> klassNamesByIndex = new HashMap<>();
     private final Map<Short, String> methodNamesByIndex = new HashMap<>();
 
-    public OCKlass(String className) {
+    public OCKlass(InterpMain i, String className) {
+        interpreter = i;
         name = className;
         superClass = null;
     }
@@ -54,9 +57,14 @@ public class OCKlass {
     }
 
     public void callAllStatics() {
-        // Locate the static to call, <clinit>
+        // Locate the static to call
+        
+        final OCMethod meth = null; // <clinit>
         
         // Call it :)
+        if (meth != null) {
+            interpreter.execMethod(meth);
+        }
         
     }
 

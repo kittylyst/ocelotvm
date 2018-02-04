@@ -29,7 +29,7 @@ public class TestInterp {
     public void hello_world_loaded_from_file_executes() throws Exception {
         String fName = "Println.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(buf, fName);
+        OCKlass klass = OCKlassParser.of(null, buf, fName);
 
         repo.add(klass);
         im = new InterpMain(repo);
@@ -43,7 +43,7 @@ public class TestInterp {
     public void simple_branching_executes() throws Exception {
         String fName = "optjava/bc/SimpleTests.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(buf, fName);
+        OCKlass klass = OCKlassParser.of(null, buf, fName);
 
         repo.add(klass);
         im = new InterpMain(repo);
@@ -59,7 +59,7 @@ public class TestInterp {
     public void simple_static_calls_executes() throws Exception {
         String fName = "octest/StaticCalls.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(buf, fName);
+        OCKlass klass = OCKlassParser.of(null, buf, fName);
 
         repo.add(klass);
         im = new InterpMain(repo);
@@ -91,7 +91,7 @@ public class TestInterp {
     public void simple_executes() throws Exception {
         String fName = "octest/Simple.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(buf, fName);
+        OCKlass klass = OCKlassParser.of(null, buf, fName);
 
         repo.add(klass);
         im = new InterpMain(repo);
@@ -107,7 +107,7 @@ public class TestInterp {
     public void simple_invoke() throws Exception {
         String fName = "SampleInvoke.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(buf, fName);
+        OCKlass klass = OCKlassParser.of(null, buf, fName);
         
         repo.add(klass);
         im = new InterpMain(repo);

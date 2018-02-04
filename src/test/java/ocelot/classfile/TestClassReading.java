@@ -20,7 +20,7 @@ public class TestClassReading {
     public void check_cp_for_hello_world() throws IOException, ClassNotFoundException {
         String fName = "Println.class";
         buf = Utils.pullBytes(fName);
-        ce = new OCKlassParser(buf, fName);
+        ce = new OCKlassParser(null, buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
         assertEquals("Minor version should be 0", 0, ce.getMinor());
@@ -59,7 +59,7 @@ public class TestClassReading {
     public void check_simple_fields_methods() throws IOException, ClassNotFoundException {
         String fName = "octest/SimpleFieldsAndMethods.class";
         buf = Utils.pullBytes(fName);
-        ce = new OCKlassParser(buf, fName);
+        ce = new OCKlassParser(null, buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
         assertEquals("Minor version should be 0", 0, ce.getMinor());
@@ -97,14 +97,14 @@ public class TestClassReading {
     public void check_names() throws IOException, ClassNotFoundException {
         String fName = "Println.class";
         buf = Utils.pullBytes(fName);
-        ce = new OCKlassParser(buf, fName);
+        ce = new OCKlassParser(null, buf, fName);
         ce.parse();
         String clzName = ce.className();
         assertEquals("kathik/Println", clzName);
 
         fName = "octest/SimpleFieldsAndMethods.class";
         buf = Utils.pullBytes(fName);
-        ce = new OCKlassParser(buf, fName);
+        ce = new OCKlassParser(null, buf, fName);
         ce.parse();
         clzName = ce.className();
         assertEquals("octest/SimpleFieldsAndMethods", clzName);
