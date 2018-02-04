@@ -1,5 +1,6 @@
 package ocelot;
 
+import static ocelot.JVMValue.entryRef;
 import ocelot.classfile.OCKlassParser;
 import ocelot.rt.ClassRepository;
 import ocelot.rt.SimpleLinkedJVMHeap;
@@ -94,6 +95,20 @@ public final class InterpMain {
                 case BIPUSH:
                     eval.iconst((int) instr[current++]);
                     break;
+                case DADD:
+                    eval.dadd();
+                    break;
+                case DCONST_0:
+                    eval.dconst(0.0);
+                    break;
+                case DCONST_1:
+                    eval.dconst(1.0);
+                    break;
+                case DRETURN:
+                    return eval.pop();
+                case DSUB:
+                    eval.dsub();
+                    break;
                 case DUP:
                     eval.dup();
                     break;
@@ -102,6 +117,9 @@ public final class InterpMain {
                     break;
                 case GOTO:
                     current += 2 + ((int) instr[current] << 8) + (int) instr[current + 1];
+                    break;
+                case I2D:
+                    eval.i2d();
                     break;
                 case IADD:
                     eval.iadd();
@@ -246,7 +264,7 @@ public final class InterpMain {
                 case NEW:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
                     OCKlass klass = repo.lookupKlass(currentKlass, (short) cpLookup);
-                    eval.push(new JVMValue(JVMType.A, heap.allocateObj(klass)));
+                    eval.push(entryRef(heap.allocateObj(klass)));
                     break;
                 case NOP:
                     break;

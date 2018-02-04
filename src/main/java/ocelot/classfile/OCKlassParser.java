@@ -92,7 +92,9 @@ public final class OCKlassParser {
     public static OCKlass of(byte[] buf, String fName) throws ClassNotFoundException {
         OCKlassParser self = new OCKlassParser(buf, fName);
         self.parse();
-        return self.klass();
+        OCKlass klass = self.klass();
+        klass.callAllStatics();
+        return klass;
     }
 
     void parseHeader() {

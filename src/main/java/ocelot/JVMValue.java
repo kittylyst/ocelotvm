@@ -8,10 +8,11 @@ package ocelot;
  * @author ben
  */
 public class JVMValue {
+
     public final JVMType type;
     public final long value;
 
-    public JVMValue(JVMType t, long bits) {
+    private JVMValue(JVMType t, long bits) {
         this.type = t;
         this.value = bits;
     }
@@ -19,6 +20,17 @@ public class JVMValue {
     JVMValue copy() {
         return new JVMValue(type, value);
     }
-    
-    
+
+    public static JVMValue entry(double d) {
+        return new JVMValue(JVMType.D, Double.doubleToLongBits(d));
+    }
+
+    public static JVMValue entry(int i) {
+        return new JVMValue(JVMType.I, i);
+    }
+
+    public static JVMValue entryRef(long id) {
+        return new JVMValue(JVMType.A, id);
+    }
+
 }

@@ -11,7 +11,7 @@ import java.io.InputStream;
 public class Utils {
 
     public static byte[] pullBytes(String fName) throws IOException {
-        try (final InputStream is = TestInterp.class.getClassLoader().getResourceAsStream(fName);final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (final InputStream is = TestIntArithmetic.class.getClassLoader().getResourceAsStream(fName);final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[4096];
             for (;;) {
                 int nread = is.read(buffer);
