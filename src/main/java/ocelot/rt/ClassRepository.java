@@ -15,7 +15,6 @@ public final class ClassRepository {
     public static final String OBJSIG = "java/lang/Object";
     public static final String STRSIG = "java/lang/String";
 
-//    private static final ConcurrentMap<String, JVMKlass> loadedClasses = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, OCKlass> loadedClasses = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, OCMethod> methodCache = new ConcurrentHashMap<>();
 
@@ -27,7 +26,7 @@ public final class ClassRepository {
         // FIXME Object::<init> needs to be in the method cache.
         OCMethod m = OCMethod.OBJ_INIT;
         out.methodCache.put(m.getClassName() + "." + m.getNameAndType(), m);
-        
+
         return out;
     }
 
@@ -59,11 +58,10 @@ public final class ClassRepository {
         OCKlass klass = loadedClasses.get(className);
         String otherKlassName = klass.getKlassNameByCPIndex(cpIndex);
         return loadedClasses.get(otherKlassName);
-//        CPEntry cpe = klass.getCPEntry(cpIndex);
-//        String klassName = klass.resolveAsString(cpe.getIndex());
-//
-//        OCKlass out = loadedClasses.get(klassName);
-//        return out;
     }
 
+    public OCField lookupField(final String className, final short cpIndex) {
+        OCKlass klass = loadedClasses.get(className);
+        return klass.getFieldByCPIndex(cpIndex);
+    }
 }

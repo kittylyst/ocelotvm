@@ -7,7 +7,8 @@ public class OCField {
     private final String name;
     private final JVMType type;
     private final int flags;
-
+//    private final OCKlass klass;
+    
     public OCField(final String name, final JVMType type, final int flags) {
         this.name = name;
         this.type = type;
@@ -24,5 +25,9 @@ public class OCField {
 
     public int getFlags() {
         return flags;
+    }
+
+    public OCKlass getKlass() {
+        return null;
     }
 }

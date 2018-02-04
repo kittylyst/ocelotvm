@@ -4,19 +4,24 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import ocelot.InterpMain;
+import ocelot.JVMValue;
 
 /**
  *
  * @author ben
  */
 public class OCKlass {
+
     private final InterpMain interpreter;
-    
+
     private final String name;
     private final String superClass;
     private final Map<String, OCMethod> methodsByName = new HashMap<>();
+    private final Map<String, OCField> fieldsByName = new HashMap<>();
     private final Map<Short, String> klassNamesByIndex = new HashMap<>();
     private final Map<Short, String> methodNamesByIndex = new HashMap<>();
+
+    // The actual values of the static fields
     private final Map<String, Long> staticFieldsByName = new HashMap<>();
 
     public OCKlass(InterpMain i, String className) {
@@ -61,6 +66,10 @@ public class OCKlass {
         return klassNamesByIndex.get(cpIndex);
     }
 
+    public OCField getFieldByCPIndex(short cpIndex) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     public void callClInit() {
         // Locate static to call
         final OCMethod meth = methodsByName.get("<clinit>:()V");
@@ -69,7 +78,11 @@ public class OCKlass {
         if (meth != null) {
             interpreter.execMethod(meth);
         }
-        
+
+    }
+
+    public void setStaticField(String name, JVMValue val) {
+        staticFieldsByName.put(name, val.value);
     }
 
 }

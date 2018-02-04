@@ -2,10 +2,7 @@ package ocelot;
 
 import static ocelot.JVMValue.entryRef;
 import ocelot.classfile.OCKlassParser;
-import ocelot.rt.ClassRepository;
-import ocelot.rt.SimpleLinkedJVMHeap;
-import ocelot.rt.OCKlass;
-import ocelot.rt.OCMethod;
+import ocelot.rt.*;
 
 /**
  *
@@ -286,11 +283,16 @@ public final class InterpMain {
                     }
                     eval.pop();
                     break;
+                case PUTSTATIC:
+                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
+                    OCField field = repo.lookupField(klassName, (short)cpLookup);
+                    OCKlass fKlass = field.getKlass();
+                    JVMValue val = eval.pop();
+                    fKlass.setStaticField(field.getName(), val);
                 case RETURN:
                     return null;
                 // Dummy implementation
                 case GETSTATIC:
-                case PUTSTATIC:
                 case INVOKEVIRTUAL:
                 case LDC:
                     System.out.print("Executing " + op + " with param bytes: ");

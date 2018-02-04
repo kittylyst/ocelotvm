@@ -203,7 +203,7 @@ public final class OCKlassParser {
             int name_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
             int desc_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
             int attrs_count = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-            f = new CPField(fFlags, name_idx, desc_idx, attrs_count);
+            f = new CPField(className(), fFlags, name_idx, desc_idx, attrs_count);
 
             for (int aidx = 0; aidx < f.getAttrs().length; aidx++) {
                 f.setAttr(aidx, parseAttribute(f));
@@ -292,15 +292,17 @@ public final class OCKlassParser {
 
     public class CPField extends CPBase {
 
+        private String klassName;
         private JVMType type;
         private int nameIdx;
         private int descIdx;
         private String name;
 
-        public CPField(int fFlags, int nameIdx, int descIdx, int attrCount) {
-            super(fFlags, nameIdx, descIdx, attrCount);
-            this.nameIdx = nameIdx;
-            this.descIdx = descIdx;
+        public CPField(String className, int fFlags, int name_idx, int desc_idx, int attrs_count) {
+            super(fFlags, name_idx, desc_idx, attrs_count);
+            klassName = className;
+            this.nameIdx = name_idx;
+            this.descIdx = desc_idx;
 
             name = resolveAsString(nameIdx);
             String desc = resolveAsString(descIdx);
