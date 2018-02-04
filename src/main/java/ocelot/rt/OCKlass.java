@@ -53,4 +53,8 @@ public class OCKlass {
         return klassNamesByIndex.get(cpIndex);
     }
 
+    public void callAllStatics() {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

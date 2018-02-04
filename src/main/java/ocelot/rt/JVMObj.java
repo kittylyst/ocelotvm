@@ -3,7 +3,6 @@ package ocelot.rt;
 import ocelot.classfile.OCKlassParser;
 
 /**
- * This class should be public to allow the new opcode to create it
  * 
  * @author ben
  */
