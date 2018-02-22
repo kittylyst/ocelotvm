@@ -1,6 +1,7 @@
 package ocelot.rt;
 
 import static ocelot.Opcode.*;
+import static ocelot.classfile.OCKlassParser.ACC_PUBLIC;
 
 /**
  *
@@ -12,16 +13,18 @@ public class OCMethod {
     private final String nameAndType;
     private final byte[] bytecode;
     private final String signature;
+    private final int flags;
     private int numParams = -1;
 
     private static final byte[] JUST_RETURN = {RETURN.B()};
     
-    public static final OCMethod OBJ_INIT = new OCMethod("java/lang/Object", "()V", "<init>:()V", JUST_RETURN);
+    public static final OCMethod OBJ_INIT = new OCMethod("java/lang/Object", "()V", "<init>:()V", ACC_PUBLIC, JUST_RETURN);
     
-    public OCMethod(final String klassName, final String sig, final String nameType, final byte[] buf) {
+    public OCMethod(final String klassName, final String sig, final String nameType, final int fls, final byte[] buf) {
         signature = sig;
         nameAndType = nameType;
         bytecode = buf;
+        flags = fls;
         className = klassName;
     }
 
@@ -35,6 +38,10 @@ public class OCMethod {
 
     public String getSignature() {
         return signature;
+    }
+
+    public int getFlags() {
+        return flags;
     }
 
     public int numParams() {
@@ -72,4 +79,9 @@ public class OCMethod {
         return bytecode;
     }
 
+    @Override
+    public String toString() {
+        return "OCMethod{" + "className=" + className + ", nameAndType=" + nameAndType + ", bytecode=" + bytecode + ", signature=" + signature + ", flags=" + flags + ", numParams=" + numParams + '}';
+    }
+    
 }

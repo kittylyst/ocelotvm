@@ -3,6 +3,9 @@ package ocelot.rt;
 import ocelot.*;
 import static ocelot.JVMValue.entry;
 import ocelot.classfile.OCKlassParser;
+import static ocelot.classfile.OCKlassParser.ACC_PRIVATE;
+import static ocelot.classfile.OCKlassParser.ACC_PUBLIC;
+import static ocelot.classfile.OCKlassParser.ACC_STATIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import org.junit.Before;
@@ -36,6 +39,7 @@ public class TestInterp {
         im = new InterpMain(repo);
 
         OCMethod meth = klass.getMethodByName("main:([Ljava/lang/String;)V");
+        assertEquals("Flags should be public, static", meth.getFlags(), ACC_PUBLIC | ACC_STATIC);
 
         assertNull("Hello World should execute", im.execMethod(meth));
     }
@@ -50,6 +54,8 @@ public class TestInterp {
         im = new InterpMain(repo);
 
         OCMethod meth = klass.getMethodByName("if_bc:()I");
+        assertEquals("Flags should be public", ACC_PUBLIC, meth.getFlags());
+
         JVMValue res = im.execMethod(meth);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
@@ -66,16 +72,19 @@ public class TestInterp {
         im = new InterpMain(repo);
 
         OCMethod meth = klass.getMethodByName("call1:()I"); // "main:([Ljava/lang/String;)V");
+        assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
         JVMValue res = im.execMethod(meth);
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 23", 23, (int) res.value);
 
         meth = klass.getMethodByName("call4:()I");
+        assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
         res = im.execMethod(meth);
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 47", 47, (int) res.value);
 
         meth = klass.getMethodByName("adder:(II)I");
+        assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
         LocalVars lv = new LocalVars();
         JVMValue[] vars = new JVMValue[2];
         vars[0] = entry(5);
@@ -98,6 +107,7 @@ public class TestInterp {
         im = new InterpMain(repo);
 
         OCMethod meth = klass.getMethodByName("setJ:(I)V");
+        assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
         LocalVars lvt = new LocalVars();
         JVMValue[] vs = new JVMValue[1];
         vs[0] = new JVMValue(JVMType.I, 13L);
@@ -107,12 +117,14 @@ public class TestInterp {
         assertNull("Call to setter should be return null", res);
 
         meth = klass.getMethodByName("getJ:()I");
+        assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
         res = im.execMethod(meth);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 13", 13, (int) res.value);
 
         meth = klass.getMethodByName("incJ:()V");
+        assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
         res = im.execMethod(meth);
         assertNull("Call to incJ() should be return null", res);
 
@@ -134,6 +146,7 @@ public class TestInterp {
         im = new InterpMain(repo);
 
         OCMethod meth = klass.getMethodByName("simple:()I");
+        assertEquals("Flags should be private, static", ACC_PRIVATE | ACC_STATIC, meth.getFlags());
         JVMValue res = im.execMethod(meth);
 
         assertEquals("Return type should be int", JVMType.I, res.type);
@@ -150,6 +163,7 @@ public class TestInterp {
         im = new InterpMain(repo);
 
         OCMethod meth = klass.getMethodByName("foo:()I");
+        assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
         JVMValue res = im.execMethod(meth);
 
         assertEquals("Return type should be int", JVMType.I, res.type);

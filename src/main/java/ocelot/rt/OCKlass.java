@@ -13,7 +13,7 @@ import static ocelot.classfile.OCKlassParser.ACC_STATIC;
  */
 public class OCKlass {
 
-    private final InterpMain interpreter;
+//    private final InterpMain interpreter;
 
     private final String name;
     private final String superClass;
@@ -29,14 +29,7 @@ public class OCKlass {
     // The actual values of the static fields
     private final Map<String, Long> staticFieldsByName = new HashMap<>();
 
-    public OCKlass(InterpMain i, String className) {
-        interpreter = i;
-        name = className;
-        superClass = null;
-    }
-
     public OCKlass(String className) {
-        interpreter = null;
         name = className;
         superClass = null;
     }
@@ -77,7 +70,7 @@ public class OCKlass {
         return klassNamesByIndex.get(cpIndex);
     }
 
-    public void callClInit() {
+    public void callClInit(InterpMain interpreter) {
         final OCMethod meth = methodsByName.get("<clinit>:()V");
         
         if (meth != null) {

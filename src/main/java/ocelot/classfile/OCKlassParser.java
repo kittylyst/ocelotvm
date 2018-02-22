@@ -58,8 +58,7 @@ public final class OCKlassParser {
     public static final int ACC_ABSTRACT_M = 0x0400;       // (Method) Declared abstract; no implementation is provided.
     public static final int ACC_STRICT = 0x0800;       // (Method) Declared strictfp; floating-point mode is FP-strict.
 
-    OCKlassParser(InterpMain i, byte[] buf, String fName) {
-//        interpreter = i;
+    OCKlassParser(byte[] buf, String fName) {
         filename = fName;
         clzBytes = buf;
     }
@@ -90,12 +89,36 @@ public final class OCKlassParser {
 //        parseAttributes();
     }
 
+    /**
+     * Convenience ctor for the case where we want an OCKlass object, but we
+     * are just parsing, not making the type active
+     * 
+     * @param buf
+     * @param fName
+     * @return
+     * @throws ClassNotFoundException 
+     */
+    public static OCKlass of(byte[] buf, String fName) throws ClassNotFoundException {
+        return of(null, buf, fName);
+    }
+
+    /**
+     * Parse a class and make it active (running the static <clinit> method)
+     * 
+     * @param interpreter
+     * @param buf
+     * @param fName
+     * @return
+     * @throws ClassNotFoundException 
+     */
     public static OCKlass of(final InterpMain interpreter, byte[] buf, String fName) throws ClassNotFoundException {
-        OCKlassParser self = new OCKlassParser(interpreter, buf, fName);
+        OCKlassParser self = new OCKlassParser(buf, fName);
         self.parse();
-        OCKlass klass = self.klass(interpreter);
-        interpreter.getRepo().add(klass);
-        klass.callClInit();
+        OCKlass klass = self.klass();
+        if (interpreter != null) {
+            InterpMain.getRepo().add(klass);
+            klass.callClInit(interpreter);
+        }
         return klass;
     }
 
@@ -209,10 +232,10 @@ public final class OCKlassParser {
 
     }
 
-    private OCKlass klass(InterpMain i) {
-        final OCKlass out = new OCKlass(i, className());
+    private OCKlass klass() {
+        final OCKlass out = new OCKlass(className());
         for (CPMethod cpm : methods) {
-            final OCMethod ocm = new OCMethod(className(), cpm.signature, cpm.nameAndType, cpm.buf);
+            final OCMethod ocm = new OCMethod(className(), cpm.signature, cpm.nameAndType, cpm.flags, cpm.buf);
             out.addDefinedMethod(ocm);
         }
 
@@ -220,7 +243,7 @@ public final class OCKlassParser {
             final OCField ocf = new OCField(out, cpf.name, cpf.type, cpf.flags);
             out.addDefinedField(ocf);
         }
-        
+
         for (CPEntry cpe : items) {
             int classIndex, nameTypeIndex;
             String className, nameAndType;
