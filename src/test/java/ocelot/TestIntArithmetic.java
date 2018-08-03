@@ -39,7 +39,12 @@ public class TestIntArithmetic {
         assertEquals("Return type is int", JVMType.I, res.type);
         assertEquals("Return value should be 1", 1, (int) res.value);
 
+        byte[] buf2 = {BIPUSH.B(), (byte)17, BIPUSH.B(), (byte)5, IREM.B(), IRETURN.B()};
+        res = im.execMethod("", "main:()V", buf2, new LocalVars());
+        assertEquals("Return type is int", JVMType.I, res.type);
+        assertEquals("Return value should be 2", 2, (int) res.value);
     }
+
 
     @Test
     public void int_arithmetic_works() {

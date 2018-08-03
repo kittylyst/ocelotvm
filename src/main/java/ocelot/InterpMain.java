@@ -262,6 +262,9 @@ public final class InterpMain {
                 case IOR:
                     eval.ior();
                     break;
+                case IREM:
+                    eval.irem();
+                    break;
                 case IRETURN:
                     return eval.pop();
                 case ISTORE:
@@ -324,6 +327,12 @@ public final class InterpMain {
                     return null;
                 case SIPUSH:
                     eval.iconst(((int) instr[current++] << 8) + (int) instr[current++]);
+                    break;
+                case SWAP:
+                    JVMValue val1 = eval.pop();
+                    JVMValue val2 = eval.pop();
+                    eval.push(val1);
+                    eval.push(val2);
                     break;
                 // Dummy implementation
                 case LDC:

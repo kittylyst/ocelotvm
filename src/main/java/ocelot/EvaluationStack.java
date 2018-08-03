@@ -22,6 +22,7 @@ public class EvaluationStack extends Stack<JVMValue> {
         push(entry(add));
     }
 
+    // FIXME CHECK ORDERING SEMANTICS HERE
     void idiv() {
         JVMValue ev1 = pop();
         JVMValue ev2 = pop();
@@ -36,6 +37,15 @@ public class EvaluationStack extends Stack<JVMValue> {
         // For a runtime checking interpreter - type checks would go here...
         int mul = (int) ev1.value * (int) ev2.value;
         push(entry(mul));
+    }
+
+    // FIXME CHECK ORDERING SEMANTICS HERE
+    void irem() {
+        JVMValue ev1 = pop();
+        JVMValue ev2 = pop();
+        // For a runtime checking interpreter - type checks would go here...
+        int rem = (int) ev2.value % (int) ev1.value;
+        push(entry(rem));
     }
 
     void isub() {
