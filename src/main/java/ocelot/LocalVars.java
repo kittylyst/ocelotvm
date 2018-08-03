@@ -29,7 +29,7 @@ public final class LocalVars {
         return vars[b & 0xff].copy();
     }
 
-    void istore(byte b, JVMValue val) {
+    void store(byte b, JVMValue val) {
         // Type-check...
         vars[b & 0xff] = val;
     }
@@ -51,4 +51,5 @@ public final class LocalVars {
     public JVMValue dload(byte b) {
         return vars[b & 0xff].copy();
     }
+
 }

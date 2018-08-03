@@ -128,6 +128,21 @@ public final class InterpMain {
                     break;
                 case DRETURN:
                     return eval.pop();
+                case DSTORE:
+                    lvt.store(instr[current++], eval.pop());
+                    break;
+                case DSTORE_0:
+                    lvt.store((byte) 0, eval.pop());
+                    break;
+                case DSTORE_1:
+                    lvt.store((byte) 1, eval.pop());
+                    break;
+                case DSTORE_2:
+                    lvt.store((byte) 2, eval.pop());
+                    break;
+                case DSTORE_3:
+                    lvt.store((byte) 3, eval.pop());
+                    break;
                 case DSUB:
                     eval.dsub();
                     break;
@@ -299,19 +314,19 @@ public final class InterpMain {
                 case IRETURN:
                     return eval.pop();
                 case ISTORE:
-                    lvt.istore(instr[current++], eval.pop());
+                    lvt.store(instr[current++], eval.pop());
                     break;
                 case ISTORE_0:
-                    lvt.istore((byte) 0, eval.pop());
+                    lvt.store((byte) 0, eval.pop());
                     break;
                 case ISTORE_1:
-                    lvt.istore((byte) 1, eval.pop());
+                    lvt.store((byte) 1, eval.pop());
                     break;
                 case ISTORE_2:
-                    lvt.istore((byte) 2, eval.pop());
+                    lvt.store((byte) 2, eval.pop());
                     break;
                 case ISTORE_3:
-                    lvt.istore((byte) 3, eval.pop());
+                    lvt.store((byte) 3, eval.pop());
                     break;
                 case ISUB:
                     eval.isub();
