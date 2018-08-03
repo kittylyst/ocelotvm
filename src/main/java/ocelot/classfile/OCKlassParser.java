@@ -116,6 +116,7 @@ public final class OCKlassParser {
         self.parse();
         OCKlass klass = self.klass();
         if (interpreter != null) {
+            // FIXME - Is this really a singleton or should this be an instance call
             InterpMain.getRepo().add(klass);
             klass.callClInit(interpreter);
         }

@@ -1,19 +1,28 @@
-package ocelot.rt;
+package ocelot;
 
 import ocelot.*;
+
 import static ocelot.JVMValue.entry;
+
 import ocelot.classfile.OCKlassParser;
+
+import static ocelot.Opcode.ICONST_2;
+import static ocelot.Opcode.IDIV;
+import static ocelot.Opcode.IRETURN;
 import static ocelot.classfile.OCKlassParser.ACC_PRIVATE;
 import static ocelot.classfile.OCKlassParser.ACC_PUBLIC;
 import static ocelot.classfile.OCKlassParser.ACC_STATIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+
+import ocelot.rt.ClassRepository;
+import ocelot.rt.OCKlass;
+import ocelot.rt.OCMethod;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- *
  * @author ben
  */
 public class TestInterp {
@@ -170,4 +179,23 @@ public class TestInterp {
         assertEquals("Return value should be 9", 9, (int) res.value);
     }
 
+
+    @Test
+    public void simple_new_field_executes() throws Exception {
+        String fName = "octest/MyInteger.class";
+        buf = Utils.pullBytes(fName);
+        OCKlass klass = OCKlassParser.of(null, buf, fName);
+        repo.add(klass);
+        im = new InterpMain(repo);
+
+        fName = "octest/UseMyI.class";
+        buf = Utils.pullBytes(fName);
+        klass = OCKlassParser.of(im, buf, fName);
+        repo.add(klass);
+
+        OCMethod meth = klass.getMethodByName("run:()I");
+        JVMValue res = im.execMethod(meth);
+        assertEquals("Try to exec the ctor", 42, res.value);
+
+    }
 }

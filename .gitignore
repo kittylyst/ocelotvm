@@ -9,3 +9,6 @@
 *.ear
 *~
 /target/
+
+.gradle/
+jvm/

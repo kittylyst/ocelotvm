@@ -120,6 +120,14 @@ public final class InterpMain {
                 case DUP_X1:
                     eval.dupX1();
                     break;
+                case GETFIELD:
+                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
+                    OCField field = repo.lookupField(klassName, (short) cpLookup);
+                    JVMValue receiver = eval.pop();
+                    // VERIFY: Should check to make sure receiver is an A
+                    JVMObj obj = heap.findObject(receiver.value);
+                    eval.push(obj.getField(field));
+                    break;
                 case GETSTATIC:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
                     OCField f = repo.lookupField(klassName, (short) cpLookup);
@@ -289,12 +297,21 @@ public final class InterpMain {
                     }
                     eval.pop();
                     break;
+                case PUTFIELD:
+                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
+                    OCField putf = repo.lookupField(klassName, (short) cpLookup);
+                    JVMValue val = eval.pop();
+                    JVMValue recvp = eval.pop();
+                    // VERIFY: Should check to make sure receiver is an A
+                    JVMObj objp = heap.findObject(recvp.value);
+                    objp.putField(putf, val);
+                    break;
                 case PUTSTATIC:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OCField field = repo.lookupField(klassName, (short) cpLookup);
-                    OCKlass fKlass = field.getKlass();
-                    JVMValue val = eval.pop();
-                    fKlass.setStaticField(field.getName(), val);
+                    OCField puts = repo.lookupField(klassName, (short) cpLookup);
+                    OCKlass fKlass = puts.getKlass();
+                    JVMValue vals = eval.pop();
+                    fKlass.setStaticField(puts.getName(), vals);
                     break;
                 case RETURN:
                     return null;
@@ -320,6 +337,7 @@ public final class InterpMain {
                     System.err.println("Saw " + op + " - that can't happen. Stopping.");
                     System.exit(1);
             }
+            // SAFEPOINT CHECK GOES HERE
         }
     }
 

@@ -23,6 +23,7 @@ public enum Opcode {
     DSUB(0x67),
     DUP(0x59),
     DUP_X1(0x5a),
+    GETFIELD(0xb4, 2),
     GETSTATIC(0xb2, 2),
     GOTO(0xa7, 2),
     I2D(0x87),
@@ -73,6 +74,7 @@ public enum Opcode {
     NOP(0x00),
     POP(0x57),
     POP2(0x58),
+    PUTFIELD(0xb5, 2),
     PUTSTATIC(0xb3, 2),
     RET(0xa9, 1),
     RETURN(0xb1);    
