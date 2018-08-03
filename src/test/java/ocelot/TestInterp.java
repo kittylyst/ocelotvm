@@ -204,7 +204,15 @@ public class TestInterp {
 
         meth = klass.getMethodByName("run2:()I");
         res = im.execMethod(meth);
-        assertEquals("Try to exec the ctor", 1337, res.value);
+        assertEquals("Use an extra level of indirection", 1337, res.value);
+
+        meth = klass.getMethodByName("runC:()I");
+        res = im.execMethod(meth);
+        assertEquals("Try to exec the invokevirtual", 42, res.value);
+
+        meth = klass.getMethodByName("run2C:()I");
+        res = im.execMethod(meth);
+        assertEquals("Try to exec the invokevirtual", 1337, res.value);
 
     }
 }

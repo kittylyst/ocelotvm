@@ -9,6 +9,7 @@ public enum Opcode {
     ALOAD(0x19, 1),
     ALOAD_0(0x2a),
     ALOAD_1(0x2b),
+    ARETURN(0xb0),
     ASTORE(0x53, 1),
     ASTORE_0(0x4b),
     ASTORE_1(0x4c),

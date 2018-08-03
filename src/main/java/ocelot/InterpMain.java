@@ -88,6 +88,8 @@ public final class InterpMain {
                 case ALOAD_1:
                     eval.push(lvt.aload((byte) 1));
                     break;
+                case ARETURN:
+                    return eval.pop();
                 case ASTORE:
                     lvt.astore(instr[current++], eval.pop());
                     break;
@@ -252,6 +254,11 @@ public final class InterpMain {
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
                     dispatchInvoke(repo.lookupMethod(currentKlass, (short) cpLookup), eval, false);
                     break;
+                // FIXME DOES NOT ACTUALLY DO VIRTUAL LOOKUP YET
+                case INVOKEVIRTUAL:
+                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
+                    dispatchInvoke(repo.lookupMethod(currentKlass, (short) cpLookup), eval, true);
+                    break;
                 case IOR:
                     eval.ior();
                     break;
@@ -319,7 +326,6 @@ public final class InterpMain {
                     eval.iconst(((int) instr[current++] << 8) + (int) instr[current++]);
                     break;
                 // Dummy implementation
-                case INVOKEVIRTUAL:
                 case LDC:
                     System.out.print("Executing " + op + " with param bytes: ");
                     for (int i = current; i < current + num; i++) {
