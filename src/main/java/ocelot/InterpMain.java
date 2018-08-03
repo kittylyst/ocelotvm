@@ -111,6 +111,21 @@ public final class InterpMain {
                 case DCONST_1:
                     eval.dconst(1.0);
                     break;
+                case DLOAD:
+                    eval.push(lvt.dload(instr[current++]));
+                    break;
+                case DLOAD_0:
+                    eval.push(lvt.dload((byte) 0));
+                    break;
+                case DLOAD_1:
+                    eval.push(lvt.dload((byte) 1));
+                    break;
+                case DLOAD_2:
+                    eval.push(lvt.dload((byte) 2));
+                    break;
+                case DLOAD_3:
+                    eval.push(lvt.dload((byte) 3));
+                    break;
                 case DRETURN:
                     return eval.pop();
                 case DSUB:
@@ -219,6 +234,22 @@ public final class InterpMain {
                     v = eval.pop();
                     jumpTo = ((int) instr[current] << 8) + (int) instr[current + 1];
                     if (v.value != 0L) {
+                        current += jumpTo - 1;  // The -1 is necessary as we've already inc'd current
+                    }
+                    break;
+                case IFNONNULL:
+                    v = eval.pop();
+                    jumpTo = ((int) instr[current] << 8) + (int) instr[current + 1];
+                    // FIXME Check that this is of reference type
+                    if (v.value != 0L) {
+                        current += jumpTo - 1;  // The -1 is necessary as we've already inc'd current
+                    }
+                    break;
+                case IFNULL:
+                    v = eval.pop();
+                    jumpTo = ((int) instr[current] << 8) + (int) instr[current + 1];
+                    // FIXME Check that this is of reference type
+                    if (v.value == 0L) {
                         current += jumpTo - 1;  // The -1 is necessary as we've already inc'd current
                     }
                     break;

@@ -47,4 +47,8 @@ public final class LocalVars {
     public void setup(JVMValue[] vals) {
         System.arraycopy(vals, 0, vars, 0, vals.length);
     }
+
+    public JVMValue dload(byte b) {
+        return vars[b & 0xff].copy();
+    }
 }
