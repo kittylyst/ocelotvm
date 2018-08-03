@@ -188,6 +188,11 @@ public class TestInterp {
         repo.add(klass);
         im = new InterpMain(repo);
 
+        fName = "octest/IndirectMyI.class";
+        buf = Utils.pullBytes(fName);
+        klass = OCKlassParser.of(im, buf, fName);
+        repo.add(klass);
+
         fName = "octest/UseMyI.class";
         buf = Utils.pullBytes(fName);
         klass = OCKlassParser.of(im, buf, fName);
@@ -196,6 +201,10 @@ public class TestInterp {
         OCMethod meth = klass.getMethodByName("run:()I");
         JVMValue res = im.execMethod(meth);
         assertEquals("Try to exec the ctor", 42, res.value);
+
+//        meth = klass.getMethodByName("run2:()I");
+//        res = im.execMethod(meth);
+//        assertEquals("Try to exec the ctor", 1337, res.value);
 
     }
 }

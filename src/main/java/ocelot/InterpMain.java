@@ -315,6 +315,9 @@ public final class InterpMain {
                     break;
                 case RETURN:
                     return null;
+                case SIPUSH:
+                    eval.iconst(((int) instr[current++] << 8) + (int) instr[current++]);
+                    break;
                 // Dummy implementation
                 case INVOKEVIRTUAL:
                 case LDC:

@@ -337,8 +337,11 @@ public final class OCKlassParser {
 
             name = resolveAsString(nameIdx);
             String desc = resolveAsString(descIdx);
-
-            type = JVMType.valueOf(desc);
+            if (desc.startsWith("L")) {
+                type = JVMType.valueOf("A");
+            } else {
+                type = JVMType.valueOf(desc);
+            }
 
             System.out.println(name + " " + desc);
         }

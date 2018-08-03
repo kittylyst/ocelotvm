@@ -77,7 +77,8 @@ public enum Opcode {
     PUTFIELD(0xb5, 2),
     PUTSTATIC(0xb3, 2),
     RET(0xa9, 1),
-    RETURN(0xb1);    
+    RETURN(0xb1),
+    SIPUSH(0x11, 2);
 
     public byte numParams() {
         return numParams;
