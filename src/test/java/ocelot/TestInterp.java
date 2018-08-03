@@ -202,9 +202,9 @@ public class TestInterp {
         JVMValue res = im.execMethod(meth);
         assertEquals("Try to exec the ctor", 42, res.value);
 
-//        meth = klass.getMethodByName("run2:()I");
-//        res = im.execMethod(meth);
-//        assertEquals("Try to exec the ctor", 1337, res.value);
+        meth = klass.getMethodByName("run2:()I");
+        res = im.execMethod(meth);
+        assertEquals("Try to exec the ctor", 1337, res.value);
 
     }
 }

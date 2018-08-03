@@ -4,7 +4,6 @@ import static ocelot.Opcode.*;
 import static ocelot.classfile.OCKlassParser.ACC_PUBLIC;
 
 /**
- *
  * @author ben
  */
 public class OCMethod {
@@ -17,9 +16,9 @@ public class OCMethod {
     private int numParams = -1;
 
     private static final byte[] JUST_RETURN = {RETURN.B()};
-    
+
     public static final OCMethod OBJ_INIT = new OCMethod("java/lang/Object", "()V", "<init>:()V", ACC_PUBLIC, JUST_RETURN);
-    
+
     public OCMethod(final String klassName, final String sig, final String nameType, final int fls, final byte[] buf) {
         signature = sig;
         nameAndType = nameType;
@@ -48,8 +47,10 @@ public class OCMethod {
         if (numParams > -1)
             return numParams;
         numParams = 0;
+        char[] chars = signature.toCharArray();
         OUTER:
-        for (char c : signature.toCharArray()) {
+        for (int i = 0; i < chars.length; i++) {
+            char c = chars[i];
             switch (c) {
                 case '(':
                     break;
@@ -64,12 +65,15 @@ public class OCMethod {
                     numParams++;
                     break;
                 case 'L':
-                    // FIXME Parse type
-                    throw new IllegalStateException("Class parameters not implemented yet");
+                    while (chars[i] != ';') {
+                        ++i;
+                    }
+                    numParams++;
+                    break;
                 case ')':
                     break OUTER;
                 default:
-                    throw new IllegalStateException("Saw illegal char: " + c + " as type descriptors");
+                    throw new IllegalStateException("Saw illegal char: " + c + " in type descriptors");
             }
         }
         return numParams;
@@ -83,5 +87,5 @@ public class OCMethod {
     public String toString() {
         return "OCMethod{" + "className=" + className + ", nameAndType=" + nameAndType + ", bytecode=" + bytecode + ", signature=" + signature + ", flags=" + flags + ", numParams=" + numParams + '}';
     }
-    
+
 }
