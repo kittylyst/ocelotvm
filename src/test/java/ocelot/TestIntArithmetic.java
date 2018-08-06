@@ -29,7 +29,7 @@ public class TestIntArithmetic {
     // 3. Look at the return value
     @Test
     public void int_divide_works() {
-        byte[] buf = {ICONST_2.B(), ICONST_2.B(), IDIV.B(), IRETURN.B()};
+        byte[] buf = {ICONST_5.B(), ICONST_3.B(), IDIV.B(), IRETURN.B()};
         JVMValue res = im.execMethod("", "main:()V", buf, new LocalVars());
         assertEquals("Return type is int", JVMType.I, res.type);
         assertEquals("Return value should be 1", 1, (int) res.value);

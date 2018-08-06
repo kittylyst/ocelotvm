@@ -24,5 +24,8 @@ public class UseMyI {
         return imi.getMi().getValue();
     }
 
-
+    public static int modulo() {
+        int i = 17;
+        return i / 3;
+    }
 }
