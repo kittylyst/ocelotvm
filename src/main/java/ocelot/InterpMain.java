@@ -294,16 +294,16 @@ public final class InterpMain {
                     break;
                 case INVOKESPECIAL:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    dispatchInvoke(repo.lookupMethod(currentKlass, (short) cpLookup), eval, true);
+                    dispatchInvoke(repo.lookupMethodExact(currentKlass, (short) cpLookup), eval);
                     break;
                 case INVOKESTATIC:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    dispatchInvoke(repo.lookupMethod(currentKlass, (short) cpLookup), eval, false);
+                    dispatchInvoke(repo.lookupMethodExact(currentKlass, (short) cpLookup), eval);
                     break;
                 // FIXME DOES NOT ACTUALLY DO VIRTUAL LOOKUP YET
                 case INVOKEVIRTUAL:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    dispatchInvoke(repo.lookupMethod(currentKlass, (short) cpLookup), eval, true);
+                    dispatchInvoke(repo.lookupMethodVirtual(currentKlass, (short) cpLookup), eval);
                     break;
                 case IOR:
                     eval.ior();
@@ -405,9 +405,9 @@ public final class InterpMain {
         }
     }
 
-    public void dispatchInvoke(OCMethod toBeCalled, EvaluationStack eval, boolean isInstance) {
+    public void dispatchInvoke(OCMethod toBeCalled, EvaluationStack eval) {
         int paramCount = toBeCalled.numParams();
-        if (isInstance)
+        if (!toBeCalled.isStatic())
             paramCount++;
         LocalVars withVars = new LocalVars();
         JVMValue[] toPass = new JVMValue[paramCount];

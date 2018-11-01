@@ -46,12 +46,33 @@ public final class ClassRepository {
         return loadedClasses.get(toCreate);
     }
 
-    public OCMethod lookupMethod(final String className, final short cpIndex) {
+    public OCMethod lookupMethodExact(final String className, final short cpIndex) {
         OCKlass klass = loadedClasses.get(className);
         String otherMethodName = klass.getMethodNameByCPIndex(cpIndex);
+        OCMethod out = methodCache.get(otherMethodName);
+        if (out == null)
+            throw new IllegalStateException("Method of signature "+ otherMethodName +" from index "+ cpIndex +" not found on class "+ className);
 
-        return methodCache.get(otherMethodName);
+        return out;
     }
+
+    public OCMethod lookupMethodVirtual(final String className, final short cpIndex) {
+        OCKlass klass = loadedClasses.get(className);
+        String otherMethodName = klass.getMethodNameByCPIndex(cpIndex);
+        OCMethod out = methodCache.get(otherMethodName);
+        if (out != null)
+            return out;
+
+        while (klass != null) {
+            klass = loadedClasses.get(klass.getParent());
+            out = methodCache.get(otherMethodName);
+            if (out != null)
+                return out;
+        }
+
+        throw new IllegalStateException("Method of signature "+ otherMethodName +" from index "+ cpIndex +" not found in virtual lookup on class "+ className);
+    }
+
 
     public void add(OCKlass klass) {
         loadedClasses.put(klass.getName(), klass);

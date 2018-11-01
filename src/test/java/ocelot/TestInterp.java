@@ -215,4 +215,22 @@ public class TestInterp {
         assertEquals("Try to exec the invokevirtual", 1337, res.value);
 
     }
+
+    @Test
+    @Ignore
+    public void simple_invokevirtual() throws Exception {
+        String fName = "octest/SonOfMyInteger.class";
+        buf = Utils.pullBytes(fName);
+        OCKlass klass = OCKlassParser.of(null, buf, fName);
+        repo.add(klass);
+        im = new InterpMain(repo);
+
+        OCMethod meth = klass.getMethodByName("getValue2:()I");
+        assertEquals("Flags should be public", ACC_PUBLIC, meth.getFlags());
+        JVMValue res = im.execMethod(meth);
+
+        assertEquals("Return type should be int", JVMType.I, res.type);
+        assertEquals("Return value should be 9", 9, (int) res.value);
+    }
+
 }

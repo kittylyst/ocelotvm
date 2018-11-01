@@ -2,6 +2,7 @@ package ocelot.rt;
 
 import static ocelot.Opcode.*;
 import static ocelot.classfile.OCKlassParser.ACC_PUBLIC;
+import static ocelot.classfile.OCKlassParser.ACC_STATIC;
 
 /**
  * @author ben
@@ -41,6 +42,10 @@ public class OCMethod {
 
     public int getFlags() {
         return flags;
+    }
+
+    public boolean isStatic() {
+        return (flags & ACC_STATIC) > 0;
     }
 
     public int numParams() {

@@ -234,7 +234,7 @@ public final class OCKlassParser {
     }
 
     private OCKlass klass() {
-        final OCKlass out = new OCKlass(className());
+        final OCKlass out = new OCKlass(className(), superClassName());
         for (CPMethod cpm : methods) {
             final OCMethod ocm = new OCMethod(className(), cpm.signature, cpm.nameAndType, cpm.flags, cpm.buf);
             out.addDefinedMethod(ocm);
@@ -567,6 +567,11 @@ public final class OCKlassParser {
     public String className() {
         return resolveAsString(thisClzIndex);
     }
+
+    public String superClassName() {
+        return resolveAsString(superClzIndex);
+    }
+
 
     public String resolveAsString(int i) {
         final CPEntry top = items[i - 1];

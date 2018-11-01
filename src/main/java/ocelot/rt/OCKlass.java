@@ -10,7 +10,7 @@ import static ocelot.classfile.OCKlassParser.ACC_STATIC;
  *
  * @author ben
  */
-public class OCKlass {
+public final class OCKlass {
     private final String name;
     private final String superClass;
 
@@ -27,9 +27,13 @@ public class OCKlass {
     // The actual values of the static fields
     private final Map<String, JVMValue> staticFieldsByName = new HashMap<>();
 
-    public OCKlass(String className) {
+    public OCKlass(String className, String superClassName) {
         name = className;
-        superClass = null;
+        superClass = superClassName;
+    }
+
+    public String getParent() {
+        return superClass;
     }
 
     public void addDefinedMethod(OCMethod m) {
