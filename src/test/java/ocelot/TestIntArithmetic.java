@@ -1,5 +1,6 @@
 package ocelot;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 
@@ -14,10 +15,10 @@ import org.junit.Ignore;
  */
 public class TestIntArithmetic {
 
-    private InterpMain im;
+    private static InterpMain im;
     
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         im = new InterpMain();
     }
 
@@ -45,9 +46,9 @@ public class TestIntArithmetic {
         assertEquals("Return value should be 2", 2, (int) res.value);
     }
 
-
     @Test
     public void int_arithmetic_works() {
+
         byte[] buf = {ICONST_1.B(), ICONST_1.B(), IADD.B(), IRETURN.B()};
         JVMValue res = im.execMethod("", "main:()V", buf, new LocalVars());
 
