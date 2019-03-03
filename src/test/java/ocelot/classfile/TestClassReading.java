@@ -5,13 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 import ocelot.*;
 import static org.junit.Assert.*;
+
+import ocelot.rt.OtMethod;
 import org.junit.Test;
 import static ocelot.classfile.CPType.*;
-import static ocelot.classfile.OCKlassParser.ACC_PUBLIC;
-import static ocelot.classfile.OCKlassParser.ACC_STATIC;
-import ocelot.rt.OCKlass;
-import ocelot.rt.OCMethod;
-import org.junit.Ignore;
+import static ocelot.classfile.OtKlassParser.ACC_PUBLIC;
+import static ocelot.classfile.OtKlassParser.ACC_STATIC;
+import ocelot.rt.OtKlass;
 
 /**
  *
@@ -19,14 +19,14 @@ import org.junit.Ignore;
  */
 public class TestClassReading {
 
-    private OCKlassParser ce;
+    private OtKlassParser ce;
     private byte[] buf;
 
     @Test
     public void check_cp_for_hello_world() throws IOException, ClassNotFoundException {
         String fName = "Println.class";
         buf = Utils.pullBytes(fName);
-        ce = new OCKlassParser(buf, fName);
+        ce = new OtKlassParser(buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
         assertEquals("Minor version should be 0", 0, ce.getMinor());
@@ -65,7 +65,7 @@ public class TestClassReading {
     public void check_simple_fields_methods() throws IOException, ClassNotFoundException {
         String fName = "octest/SimpleFieldsAndMethods.class";
         buf = Utils.pullBytes(fName);
-        ce = new OCKlassParser(buf, fName);
+        ce = new OtKlassParser(buf, fName);
         ce.parseHeader();
         assertEquals("Major version should be 52", 52, ce.getMajor());
         assertEquals("Minor version should be 0", 0, ce.getMinor());
@@ -78,7 +78,7 @@ public class TestClassReading {
         assertFalse(fName + " should not be annotation", ce.isAnnotation());
 
         ce.parseFields();
-        List<OCKlassParser.CPField> fields = ce.getFields();
+        List<OtKlassParser.CPField> fields = ce.getFields();
         assertEquals(fName + " should have 1 field", 1, fields.size());
         int idx = fields.get(0).getNameIndex();
         assertEquals(fName + " should have a field called a", "a", ce.getCPEntry(idx).getStr());
@@ -86,9 +86,9 @@ public class TestClassReading {
         assertEquals(fName + " should have a field called a of type I", "I", ce.getCPEntry(idx).getStr());
 
         ce.parseMethods();
-        List<OCKlassParser.CPMethod> methods = ce.getMethods();
+        List<OtKlassParser.CPMethod> methods = ce.getMethods();
         assertEquals(fName + " should have 2 methods", 2, methods.size());
-        OCKlassParser.CPMethod init = methods.get(0);
+        OtKlassParser.CPMethod init = methods.get(0);
         idx = init.getNameIndex();
         assertEquals(fName + " should have a method called <init>", "<init>", ce.getCPEntry(idx).getStr());
         idx = init.getDescIndex();
@@ -103,14 +103,14 @@ public class TestClassReading {
     public void check_names() throws IOException, ClassNotFoundException {
         String fName = "Println.class";
         buf = Utils.pullBytes(fName);
-        ce = new OCKlassParser(buf, fName);
+        ce = new OtKlassParser(buf, fName);
         ce.parse();
         String clzName = ce.className();
         assertEquals("kathik/Println", clzName);
 
         fName = "octest/SimpleFieldsAndMethods.class";
         buf = Utils.pullBytes(fName);
-        ce = new OCKlassParser(buf, fName);
+        ce = new OtKlassParser(buf, fName);
         ce.parse();
         clzName = ce.className();
         assertEquals("octest/SimpleFieldsAndMethods", clzName);
@@ -122,9 +122,9 @@ public class TestClassReading {
         buf = Utils.pullBytes(fName);
 
         InterpMain im = new InterpMain();
-        OCKlass klass = OCKlassParser.of(im, buf, "ClInit");
+        OtKlass klass = OtKlassParser.of(im, buf, "ClInit");
 
-        OCMethod meth = klass.getMethodByName("getTestMe:()I");
+        OtMethod meth = klass.getMethodByName("getTestMe:()I");
         assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
         
         JVMValue res = im.execMethod(meth);

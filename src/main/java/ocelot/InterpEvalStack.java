@@ -8,7 +8,7 @@ import static ocelot.JVMValue.entryRef;
  *
  * @author ben
  */
-public class EvaluationStack extends Stack<JVMValue> {
+public class InterpEvalStack extends Stack<JVMValue> {
 
     void iconst(int i) {
         push(entry(i));

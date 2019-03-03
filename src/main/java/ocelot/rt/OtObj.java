@@ -1,25 +1,24 @@
 package ocelot.rt;
 
 import ocelot.JVMValue;
-import ocelot.classfile.OCKlassParser;
 
 /**
  * The class that implements a heap-allocated JVM object
  *
  * @author ben
  */
-public final class JVMObj {
-    private final OCObjMeta mark = new OCObjMeta();
-    private final OCKlass klass;
+public final class OtObj {
+    private final OtMeta mark = new OtMeta();
+    private final OtKlass klass;
     private final long id;
     private final JVMValue[] fields;
 
-    static JVMObj of(OCKlass klass, long id) {
-        final JVMObj out = new JVMObj(klass, id);
+    static OtObj of(OtKlass klass, long id) {
+        final OtObj out = new OtObj(klass, id);
         return out;
     }
 
-    private JVMObj(OCKlass klass, long id_) {
+    private OtObj(OtKlass klass, long id_) {
         this.klass = klass;
         id = id_;
         fields = new JVMValue[klass.numFields()];
@@ -27,26 +26,26 @@ public final class JVMObj {
 
     @Override
     public String toString() {
-        return "JVMObj{" + "mark=" + mark + ", meta=" + klass + ", id=" + id + '}';
+        return "OtObj{" + "mark=" + mark + ", meta=" + klass + ", id=" + id + '}';
     }
 
     public long getId() {
         return id;
     }
 
-    public OCObjMeta getMark() {
+    public OtMeta getMark() {
         return mark;
     }
 
-    public OCKlass getKlass() {
+    public OtKlass getKlass() {
         return klass;
     }
 
-    public JVMValue getField(OCField f) {
+    public JVMValue getField(OtField f) {
         return fields[klass.getFieldOffset(f)];
     }
 
-    public void putField(OCField f, JVMValue val) {
+    public void putField(OtField f, JVMValue val) {
         fields[klass.getFieldOffset(f)] = val;
     }
 }

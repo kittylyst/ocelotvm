@@ -5,7 +5,7 @@ package ocelot.rt;
  * 
  * @author ben
  */
-public class OCObjMeta {
+public class OtMeta {
     private boolean live = true;
 
     public boolean isLive() {

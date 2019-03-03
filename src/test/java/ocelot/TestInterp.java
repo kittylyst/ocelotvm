@@ -1,23 +1,18 @@
 package ocelot;
 
-import ocelot.*;
-
 import static ocelot.JVMValue.entry;
 
-import ocelot.classfile.OCKlassParser;
+import ocelot.classfile.OtKlassParser;
 
-import static ocelot.Opcode.ICONST_2;
-import static ocelot.Opcode.IDIV;
-import static ocelot.Opcode.IRETURN;
-import static ocelot.classfile.OCKlassParser.ACC_PRIVATE;
-import static ocelot.classfile.OCKlassParser.ACC_PUBLIC;
-import static ocelot.classfile.OCKlassParser.ACC_STATIC;
+import static ocelot.classfile.OtKlassParser.ACC_PRIVATE;
+import static ocelot.classfile.OtKlassParser.ACC_PUBLIC;
+import static ocelot.classfile.OtKlassParser.ACC_STATIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import ocelot.rt.ClassRepository;
-import ocelot.rt.OCKlass;
-import ocelot.rt.OCMethod;
+import ocelot.rt.SharedKlassRepo;
+import ocelot.rt.OtKlass;
+import ocelot.rt.OtMethod;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,11 +23,11 @@ import org.junit.Test;
 public class TestInterp {
 
     private InterpMain im;
-    private ClassRepository repo;
+    private SharedKlassRepo repo;
 
     @Before
     public void setup() {
-        repo = ClassRepository.of();
+        repo = SharedKlassRepo.of();
     }
 
     private byte[] buf;
@@ -42,12 +37,12 @@ public class TestInterp {
     public void hello_world_loaded_from_file_executes() throws Exception {
         String fName = "Println.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(null, buf, fName);
+        OtKlass klass = OtKlassParser.of(null, buf, fName);
 
         repo.add(klass);
         im = new InterpMain(repo);
 
-        OCMethod meth = klass.getMethodByName("main:([Ljava/lang/String;)V");
+        OtMethod meth = klass.getMethodByName("main:([Ljava/lang/String;)V");
         assertEquals("Flags should be public, static", meth.getFlags(), ACC_PUBLIC | ACC_STATIC);
 
         assertNull("Hello World should execute", im.execMethod(meth));
@@ -57,12 +52,12 @@ public class TestInterp {
     public void simple_branching_executes() throws Exception {
         String fName = "optjava/bc/SimpleTests.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(null, buf, fName);
+        OtKlass klass = OtKlassParser.of(null, buf, fName);
 
         repo.add(klass);
         im = new InterpMain(repo);
 
-        OCMethod meth = klass.getMethodByName("if_bc:()I");
+        OtMethod meth = klass.getMethodByName("if_bc:()I");
         assertEquals("Flags should be public", ACC_PUBLIC, meth.getFlags());
 
         JVMValue res = im.execMethod(meth);
@@ -75,12 +70,12 @@ public class TestInterp {
     public void simple_static_calls_executes() throws Exception {
         String fName = "octest/StaticCalls.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(null, buf, fName);
+        OtKlass klass = OtKlassParser.of(null, buf, fName);
 
         repo.add(klass);
         im = new InterpMain(repo);
 
-        OCMethod meth = klass.getMethodByName("call1:()I"); // "main:([Ljava/lang/String;)V");
+        OtMethod meth = klass.getMethodByName("call1:()I"); // "main:([Ljava/lang/String;)V");
         assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
         JVMValue res = im.execMethod(meth);
         assertEquals("Return type should be int", JVMType.I, res.type);
@@ -94,7 +89,7 @@ public class TestInterp {
 
         meth = klass.getMethodByName("adder:(II)I");
         assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
-        LocalVars lv = new LocalVars();
+        InterpLocalVars lv = new InterpLocalVars();
         JVMValue[] vars = new JVMValue[2];
         vars[0] = entry(5);
         vars[1] = entry(7);
@@ -110,14 +105,14 @@ public class TestInterp {
     public void simple_calls_modify_static_fields() throws Exception {
         String fName = "octest/StaticCalls.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(null, buf, fName);
+        OtKlass klass = OtKlassParser.of(null, buf, fName);
 
         repo.add(klass);
         im = new InterpMain(repo);
 
-        OCMethod meth = klass.getMethodByName("setJ:(I)V");
+        OtMethod meth = klass.getMethodByName("setJ:(I)V");
         assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
-        LocalVars lvt = new LocalVars();
+        InterpLocalVars lvt = new InterpLocalVars();
         JVMValue[] vs = new JVMValue[1];
         vs[0] = new JVMValue(JVMType.I, 13L);
         lvt.setup(vs);
@@ -149,12 +144,12 @@ public class TestInterp {
     public void simple_executes() throws Exception {
         String fName = "octest/Simple.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(null, buf, fName);
+        OtKlass klass = OtKlassParser.of(null, buf, fName);
 
         repo.add(klass);
         im = new InterpMain(repo);
 
-        OCMethod meth = klass.getMethodByName("simple:()I");
+        OtMethod meth = klass.getMethodByName("simple:()I");
         assertEquals("Flags should be private, static", ACC_PRIVATE | ACC_STATIC, meth.getFlags());
         JVMValue res = im.execMethod(meth);
 
@@ -166,12 +161,12 @@ public class TestInterp {
     public void simple_invoke() throws Exception {
         String fName = "SampleInvoke.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(null, buf, fName);
+        OtKlass klass = OtKlassParser.of(null, buf, fName);
 
         repo.add(klass);
         im = new InterpMain(repo);
 
-        OCMethod meth = klass.getMethodByName("foo:()I");
+        OtMethod meth = klass.getMethodByName("foo:()I");
         assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
         JVMValue res = im.execMethod(meth);
 
@@ -184,21 +179,21 @@ public class TestInterp {
     public void simple_new_field_executes() throws Exception {
         String fName = "octest/MyInteger.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(null, buf, fName);
+        OtKlass klass = OtKlassParser.of(null, buf, fName);
         repo.add(klass);
         im = new InterpMain(repo);
 
         fName = "octest/IndirectMyI.class";
         buf = Utils.pullBytes(fName);
-        klass = OCKlassParser.of(im, buf, fName);
+        klass = OtKlassParser.of(im, buf, fName);
         repo.add(klass);
 
         fName = "octest/UseMyI.class";
         buf = Utils.pullBytes(fName);
-        klass = OCKlassParser.of(im, buf, fName);
+        klass = OtKlassParser.of(im, buf, fName);
         repo.add(klass);
 
-        OCMethod meth = klass.getMethodByName("run:()I");
+        OtMethod meth = klass.getMethodByName("run:()I");
         JVMValue res = im.execMethod(meth);
         assertEquals("Try to exec the ctor", 42, res.value);
 
@@ -221,11 +216,11 @@ public class TestInterp {
     public void simple_invokevirtual() throws Exception {
         String fName = "octest/SonOfMyInteger.class";
         buf = Utils.pullBytes(fName);
-        OCKlass klass = OCKlassParser.of(null, buf, fName);
+        OtKlass klass = OtKlassParser.of(null, buf, fName);
         repo.add(klass);
         im = new InterpMain(repo);
 
-        OCMethod meth = klass.getMethodByName("getValue2:()I");
+        OtMethod meth = klass.getMethodByName("getValue2:()I");
         assertEquals("Flags should be public", ACC_PUBLIC, meth.getFlags());
         JVMValue res = im.execMethod(meth);
 

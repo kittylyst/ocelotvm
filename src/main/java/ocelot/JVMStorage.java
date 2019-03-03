@@ -1,7 +1,7 @@
 package ocelot;
 
-import ocelot.rt.JVMObj;
-import ocelot.rt.OCKlass;
+import ocelot.rt.OtObj;
+import ocelot.rt.OtKlass;
 
 /**
  *
@@ -9,9 +9,9 @@ import ocelot.rt.OCKlass;
  */
 public interface JVMStorage {
 
-    public long allocateObj(OCKlass klass);
+    public long allocateObj(OtKlass klass);
 
-    public JVMObj findObject(long id);
+    public OtObj findObject(long id);
 
     public void runGC();
 

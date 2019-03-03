@@ -7,11 +7,11 @@ import static ocelot.JVMValue.entry;
  *
  * @author ben
  */
-public final class LocalVars {
+public final class InterpLocalVars {
 
     private final JVMValue[] vars = new JVMValue[256];
 
-    public LocalVars() {
+    public InterpLocalVars() {
     }
 
     void iinc(byte offset, byte amount) {

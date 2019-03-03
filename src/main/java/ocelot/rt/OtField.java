@@ -2,14 +2,14 @@ package ocelot.rt;
 
 import ocelot.JVMType;
 
-public class OCField {
+public class OtField {
 
     private final String name;
     private final JVMType type;
     private final int flags;
-    private final OCKlass klass;
+    private final OtKlass klass;
     
-    public OCField(final OCKlass klz, final String name, final JVMType type, final int flags) {
+    public OtField(final OtKlass klz, final String name, final JVMType type, final int flags) {
         klass = klz;
         this.name = name;
         this.type = type;
@@ -28,7 +28,7 @@ public class OCField {
         return flags;
     }
 
-    public OCKlass getKlass() {
+    public OtKlass getKlass() {
         return klass;
     }
 }

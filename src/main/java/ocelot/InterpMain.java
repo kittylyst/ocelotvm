@@ -1,7 +1,7 @@
 package ocelot;
 
 import static ocelot.JVMValue.entryRef;
-import ocelot.classfile.OCKlassParser;
+import ocelot.classfile.OtKlassParser;
 import ocelot.rt.*;
 
 /**
@@ -13,15 +13,15 @@ public final class InterpMain {
     private static final Opcode[] table = new Opcode[256];
 
     // Singleton ?
-    private static ClassRepository repo = ClassRepository.of();
+    private static SharedKlassRepo repo = SharedKlassRepo.of();
 
     // FIXME Pluggable heap impls...
-    private final JVMStorage heap = new SimpleLinkedJVMHeap();
+    private final JVMStorage heap = new SharedSimpleHeap();
 
     public InterpMain() {
     }
 
-    public InterpMain(ClassRepository classes) {
+    public InterpMain(SharedKlassRepo classes) {
         repo = classes;
     }
 
@@ -41,24 +41,23 @@ public final class InterpMain {
         }
     }
 
-    public static ClassRepository getRepo() {
+    public static SharedKlassRepo getRepo() {
         return repo;
     }
 
-    public JVMValue execMethod(final OCMethod meth) {
-        return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBytecode(), new LocalVars());
+    public JVMValue execMethod(final OtMethod meth) {
+        return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBytecode(), new InterpLocalVars());
     }
 
-    public JVMValue execMethod(final OCMethod meth, final LocalVars lvt) {
+    public JVMValue execMethod(final OtMethod meth, final InterpLocalVars lvt) {
         return execMethod(meth.getClassName(), meth.getNameAndType(), meth.getBytecode(), lvt);
     }
 
-    JVMValue execMethod(final String klassName, final String desc, final byte[] instr, final LocalVars lvt) {
+    JVMValue execMethod(final String klassName, final String desc, final byte[] instr, final InterpLocalVars lvt) {
         if (instr == null || instr.length == 0)
             return null;
 
-        final EvaluationStack eval = new EvaluationStack();
-        final String currentKlass = klassName;
+        final InterpEvalStack eval = new InterpEvalStack();
 
         int current = 0;
         LOOP:
@@ -71,9 +70,9 @@ public final class InterpMain {
             }
             byte num = op.numParams();
             JVMValue v, v2, ret;
-            OCKlassParser.CPMethod toBeCalled;
+            OtKlassParser.CPMethod toBeCalled;
             int paramCount, jumpTo, cpLookup;
-            LocalVars withVars;
+            InterpLocalVars withVars;
             JVMValue[] toPass;
             switch (op) {
                 case ACONST_NULL:
@@ -154,16 +153,16 @@ public final class InterpMain {
                     break;
                 case GETFIELD:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OCField field = repo.lookupField(klassName, (short) cpLookup);
+                    OtField field = repo.lookupField(klassName, (short) cpLookup);
                     JVMValue receiver = eval.pop();
                     // VERIFY: Should check to make sure receiver is an A
-                    JVMObj obj = heap.findObject(receiver.value);
+                    OtObj obj = heap.findObject(receiver.value);
                     eval.push(obj.getField(field));
                     break;
                 case GETSTATIC:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OCField f = repo.lookupField(klassName, (short) cpLookup);
-                    OCKlass fgKlass = f.getKlass();
+                    OtField f = repo.lookupField(klassName, (short) cpLookup);
+                    OtKlass fgKlass = f.getKlass();
                     eval.push(fgKlass.getStaticField(f));
                     break;
                 case GOTO:
@@ -294,16 +293,16 @@ public final class InterpMain {
                     break;
                 case INVOKESPECIAL:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    dispatchInvoke(repo.lookupMethodExact(currentKlass, (short) cpLookup), eval);
+                    dispatchInvoke(repo.lookupMethodExact(klassName, (short) cpLookup), eval);
                     break;
                 case INVOKESTATIC:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    dispatchInvoke(repo.lookupMethodExact(currentKlass, (short) cpLookup), eval);
+                    dispatchInvoke(repo.lookupMethodExact(klassName, (short) cpLookup), eval);
                     break;
                 // FIXME DOES NOT ACTUALLY DO VIRTUAL LOOKUP YET
                 case INVOKEVIRTUAL:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    dispatchInvoke(repo.lookupMethodVirtual(currentKlass, (short) cpLookup), eval);
+                    dispatchInvoke(repo.lookupMethodVirtual(klassName, (short) cpLookup), eval);
                     break;
                 case IOR:
                     eval.ior();
@@ -338,7 +337,7 @@ public final class InterpMain {
                     break;
                 case NEW:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OCKlass klass = repo.lookupKlass(currentKlass, (short) cpLookup);
+                    OtKlass klass = repo.lookupKlass(klassName, (short) cpLookup);
                     eval.push(entryRef(heap.allocateObj(klass)));
                     break;
                 case NOP:
@@ -355,17 +354,17 @@ public final class InterpMain {
                     break;
                 case PUTFIELD:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OCField putf = repo.lookupField(klassName, (short) cpLookup);
+                    OtField putf = repo.lookupField(klassName, (short) cpLookup);
                     JVMValue val = eval.pop();
                     JVMValue recvp = eval.pop();
                     // VERIFY: Should check to make sure receiver is an A
-                    JVMObj objp = heap.findObject(recvp.value);
+                    OtObj objp = heap.findObject(recvp.value);
                     objp.putField(putf, val);
                     break;
                 case PUTSTATIC:
                     cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OCField puts = repo.lookupField(klassName, (short) cpLookup);
-                    OCKlass fKlass = puts.getKlass();
+                    OtField puts = repo.lookupField(klassName, (short) cpLookup);
+                    OtKlass fKlass = puts.getKlass();
                     JVMValue vals = eval.pop();
                     fKlass.setStaticField(puts.getName(), vals);
                     break;
@@ -405,11 +404,11 @@ public final class InterpMain {
         }
     }
 
-    public void dispatchInvoke(OCMethod toBeCalled, EvaluationStack eval) {
+    public void dispatchInvoke(OtMethod toBeCalled, InterpEvalStack eval) {
         int paramCount = toBeCalled.numParams();
         if (!toBeCalled.isStatic())
             paramCount++;
-        LocalVars withVars = new LocalVars();
+        InterpLocalVars withVars = new InterpLocalVars();
         JVMValue[] toPass = new JVMValue[paramCount];
         for (int j = paramCount - 1; j >= 0; j--) {
             toPass[j] = eval.pop();

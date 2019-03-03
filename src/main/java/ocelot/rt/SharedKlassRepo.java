@@ -2,7 +2,6 @@ package ocelot.rt;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import ocelot.classfile.CPEntry;
 
 /**
  * Holds all the loaded classes to date. Operations should be concurrent safe so
@@ -10,23 +9,23 @@ import ocelot.classfile.CPEntry;
  *
  * @author ben
  */
-public final class ClassRepository {
+public final class SharedKlassRepo {
 
     public static final String OBJSIG = "java/lang/Object";
     public static final String STRSIG = "java/lang/String";
     public static final String SYSSIG = "java/lang/System";
 
-    private final ConcurrentMap<String, OCKlass> loadedClasses = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, OCMethod> methodCache = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, OCField> fieldCache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, OtKlass> loadedClasses = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, OtMethod> methodCache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, OtField> fieldCache = new ConcurrentHashMap<>();
     
-    private ClassRepository() {
+    private SharedKlassRepo() {
     }
 
-    public static ClassRepository of() {
-        final ClassRepository out = new ClassRepository();
+    public static SharedKlassRepo of() {
+        final SharedKlassRepo out = new SharedKlassRepo();
         // FIXME Object::<init> needs to be in the method cache.
-        OCMethod m = OCMethod.OBJ_INIT;
+        OtMethod m = OtMethod.OBJ_INIT;
         out.methodCache.put(m.getClassName() + "." + m.getNameAndType(), m);
 
         // Add System
@@ -35,31 +34,31 @@ public final class ClassRepository {
         return out;
     }
 
-//    private OCKlass makeSystem() {
-//        final OCKlass out = new OCKlass(SYSSIG);
-//        final OCField f = 
+//    private OtKlass makeSystem() {
+//        final OtKlass out = new OtKlass(SYSSIG);
+//        final OtField f =
 //        out.addField(null);
 //        return out; 
 //    }
     
-    public OCKlass newKlass(String toCreate) {
+    public OtKlass newKlass(String toCreate) {
         return loadedClasses.get(toCreate);
     }
 
-    public OCMethod lookupMethodExact(final String className, final short cpIndex) {
-        OCKlass klass = loadedClasses.get(className);
+    public OtMethod lookupMethodExact(final String className, final short cpIndex) {
+        OtKlass klass = loadedClasses.get(className);
         String otherMethodName = klass.getMethodNameByCPIndex(cpIndex);
-        OCMethod out = methodCache.get(otherMethodName);
+        OtMethod out = methodCache.get(otherMethodName);
         if (out == null)
             throw new IllegalStateException("Method of signature "+ otherMethodName +" from index "+ cpIndex +" not found on class "+ className);
 
         return out;
     }
 
-    public OCMethod lookupMethodVirtual(final String className, final short cpIndex) {
-        OCKlass klass = loadedClasses.get(className);
+    public OtMethod lookupMethodVirtual(final String className, final short cpIndex) {
+        OtKlass klass = loadedClasses.get(className);
         String otherMethodName = klass.getMethodNameByCPIndex(cpIndex);
-        OCMethod out = methodCache.get(otherMethodName);
+        OtMethod out = methodCache.get(otherMethodName);
         if (out != null)
             return out;
 
@@ -74,24 +73,24 @@ public final class ClassRepository {
     }
 
 
-    public void add(OCKlass klass) {
+    public void add(OtKlass klass) {
         loadedClasses.put(klass.getName(), klass);
-        for (OCMethod m : klass.getMethods()) {
+        for (OtMethod m : klass.getMethods()) {
             methodCache.put(m.getClassName() + "." + m.getNameAndType(), m);
         }
-        for (OCField f : klass.getFields()) {
+        for (OtField f : klass.getFields()) {
             fieldCache.put(f.getKlass().getName() +"." + f.getName() +":"+ f.getType(), f);
         }
     }
 
-    public OCKlass lookupKlass(final String className, final short cpIndex) {
-        OCKlass klass = loadedClasses.get(className);
+    public OtKlass lookupKlass(final String className, final short cpIndex) {
+        OtKlass klass = loadedClasses.get(className);
         String otherKlassName = klass.getKlassNameByCPIndex(cpIndex);
         return loadedClasses.get(otherKlassName);
     }
 
-    public OCField lookupField(final String className, final short cpIndex) {
-        OCKlass klass = loadedClasses.get(className);
+    public OtField lookupField(final String className, final short cpIndex) {
+        OtKlass klass = loadedClasses.get(className);
         String fieldName = klass.getFieldByCPIndex(cpIndex);
         
         return fieldCache.get(fieldName);

@@ -5,15 +5,15 @@ import java.nio.file.Path;
 import java.util.*;
 import ocelot.InterpMain;
 import ocelot.JVMType;
-import ocelot.rt.OCField;
-import ocelot.rt.OCKlass;
-import ocelot.rt.OCMethod;
+import ocelot.rt.OtField;
+import ocelot.rt.OtKlass;
+import ocelot.rt.OtMethod;
 
 /**
  *
  * @author ben
  */
-public final class OCKlassParser {
+public final class OtKlassParser {
 
 //    private 
     private final byte[] clzBytes;
@@ -58,7 +58,7 @@ public final class OCKlassParser {
     public static final int ACC_ABSTRACT_M = 0x0400;       // (Method) Declared abstract; no implementation is provided.
     public static final int ACC_STRICT = 0x0800;       // (Method) Declared strictfp; floating-point mode is FP-strict.
 
-    OCKlassParser(byte[] buf, String fName) {
+    OtKlassParser(byte[] buf, String fName) {
         filename = fName;
         clzBytes = buf;
     }
@@ -90,7 +90,7 @@ public final class OCKlassParser {
     }
 
     /**
-     * Convenience ctor for the case where we want an OCKlass object, but we
+     * Convenience ctor for the case where we want an OtKlass object, but we
      * are just parsing, not making the type active
      * 
      * @param buf
@@ -98,7 +98,7 @@ public final class OCKlassParser {
      * @return
      * @throws ClassNotFoundException 
      */
-    public static OCKlass of(byte[] buf, String fName) throws ClassNotFoundException {
+    public static OtKlass of(byte[] buf, String fName) throws ClassNotFoundException {
         return of(null, buf, fName);
     }
 
@@ -111,10 +111,10 @@ public final class OCKlassParser {
      * @return
      * @throws ClassNotFoundException 
      */
-    public static OCKlass of(final InterpMain interpreter, byte[] buf, String fName) throws ClassNotFoundException {
-        OCKlassParser self = new OCKlassParser(buf, fName);
+    public static OtKlass of(final InterpMain interpreter, byte[] buf, String fName) throws ClassNotFoundException {
+        OtKlassParser self = new OtKlassParser(buf, fName);
         self.parse();
-        OCKlass klass = self.klass();
+        OtKlass klass = self.klass();
         if (interpreter != null) {
             // FIXME - Is this really a singleton or should this be an instance call
             InterpMain.getRepo().add(klass);
@@ -223,7 +223,7 @@ public final class OCKlassParser {
             int name_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
             int desc_idx = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
             int attrs_count = ((int) clzBytes[current++] << 8) + (int) clzBytes[current++];
-            f = new CPField(className(), fFlags, name_idx, desc_idx, attrs_count);
+            f = new CPField(fFlags, name_idx, desc_idx, attrs_count);
 
             for (int aidx = 0; aidx < f.getAttrs().length; aidx++) {
                 f.setAttr(aidx, parseAttribute(f));
@@ -233,15 +233,15 @@ public final class OCKlassParser {
 
     }
 
-    private OCKlass klass() {
-        final OCKlass out = new OCKlass(className(), superClassName());
+    private OtKlass klass() {
+        final OtKlass out = new OtKlass(className(), superClassName());
         for (CPMethod cpm : methods) {
-            final OCMethod ocm = new OCMethod(className(), cpm.signature, cpm.nameAndType, cpm.flags, cpm.buf);
+            final OtMethod ocm = new OtMethod(className(), cpm.signature, cpm.nameAndType, cpm.flags, cpm.buf);
             out.addDefinedMethod(ocm);
         }
 
         for (CPField cpf : fields) {
-            final OCField ocf = new OCField(out, cpf.name, cpf.type, cpf.flags);
+            final OtField ocf = new OtField(out, cpf.name, cpf.type, cpf.flags);
             out.addDefinedField(ocf);
         }
 
@@ -273,7 +273,7 @@ public final class OCKlassParser {
         }
 
         for (CPField field : fields) {
-            OCField f = new OCField(out, field.name, field.type, field.flags);
+            OtField f = new OtField(out, field.name, field.type, field.flags);
             out.addField(f);
         }
 
@@ -293,7 +293,7 @@ public final class OCKlassParser {
             nameIndex = name_idx;
             descIndex = desc_idx;
             attrs = new CPAttr[attrCount];
-            className = OCKlassParser.this.className();
+            className = OtKlassParser.this.className();
         }
 
         public int getFlags() {
@@ -312,31 +312,22 @@ public final class OCKlassParser {
             return attrs;
         }
 
-        public String getClassName() {
-            return className;
-        }
-
         public void setAttr(int i, CPAttr attr) {
             attrs[i] = attr;
         }
     }
 
     public class CPField extends CPBase {
-
-        private String klassName;
         private JVMType type;
-        private int nameIdx;
-        private int descIdx;
         private String name;
 
-        public CPField(String className, int fFlags, int name_idx, int desc_idx, int attrs_count) {
+        public CPField(int fFlags, int name_idx, int desc_idx, int attrs_count) {
             super(fFlags, name_idx, desc_idx, attrs_count);
-            klassName = className;
-            this.nameIdx = name_idx;
-            this.descIdx = desc_idx;
+            nameIndex = name_idx;
+            descIndex = desc_idx;
 
-            name = resolveAsString(nameIdx);
-            String desc = resolveAsString(descIdx);
+            name = resolveAsString(nameIndex);
+            String desc = resolveAsString(descIndex);
             if (desc.startsWith("L")) {
                 type = JVMType.valueOf("A");
             } else {
@@ -361,8 +352,8 @@ public final class OCKlassParser {
 
         CPMethod(int mFlags, int nameIdx, int descIdx, int attrCount) {
             super(mFlags, nameIdx, descIdx, attrCount);
-            signature = OCKlassParser.this.resolveAsString(descIndex);
-            nameAndType = OCKlassParser.this.resolveAsString(nameIndex) + ":" + OCKlassParser.this.resolveAsString(descIndex);
+            signature = OtKlassParser.this.resolveAsString(descIndex);
+            nameAndType = OtKlassParser.this.resolveAsString(nameIndex) + ":" + OtKlassParser.this.resolveAsString(descIndex);
         }
 
         @Override
@@ -612,14 +603,14 @@ public final class OCKlassParser {
     }
 
     // Maybe some useful techniques in ASM ?
-//    public OCKlassParser scan(String cName) throws IOException {
+//    public OtKlassParser scan(String cName) throws IOException {
 //        final Path clzPath = classNameToPath(cName);
 //        final byte[] buf = Files.readAllBytes(clzPath);
-//        OCKlassParser out = null;
+//        OtKlassParser out = null;
 //        try (final InputStream in = Files.newInputStream(clzPath)) {
 //            try {
 //                final ClassReader cr = new ClassReader(in);
-//                out = new OCKlassParser(buf, clzPath.toString());
+//                out = new OtKlassParser(buf, clzPath.toString());
 //            } catch (Exception e) {
 //                throw new IOException("Could not read class file " + clzPath, e);
 //            }
