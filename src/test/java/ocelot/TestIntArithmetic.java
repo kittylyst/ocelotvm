@@ -15,8 +15,6 @@ import org.junit.Ignore;
  */
 public class TestIntArithmetic {
 
-
-
     private static InterpMain im;
     
     @BeforeClass
@@ -37,7 +35,7 @@ public class TestIntArithmetic {
         assertEquals("Return type is int", JVMType.I, res.type);
         assertEquals("Return value should be 1", 1, (int) res.value);
 
-        byte[] buf1 = {0x05, 0x05, 0x6c, (byte) 0xac};
+        byte[] buf1 = {ICONST_2.B(), ICONST_2.B(), IDIV.B(), IRETURN.B()};
         res = im.execMethod("", "main:()V", buf1, new InterpLocalVars());
         assertEquals("Return type is int", JVMType.I, res.type);
         assertEquals("Return value should be 1", 1, (int) res.value);
