@@ -87,21 +87,6 @@ public final class InterpMain {
                 case IINC:
                     lvt.iinc(instr[current++], instr[current++]);
                     break;
-                case ILOAD:
-                    eval.push(lvt.iload(instr[current++]));
-                    break;
-                case ILOAD_0:
-                    eval.push(lvt.iload((byte) 0));
-                    break;
-                case ILOAD_1:
-                    eval.push(lvt.iload((byte) 1));
-                    break;
-                case ILOAD_2:
-                    eval.push(lvt.iload((byte) 2));
-                    break;
-                case ILOAD_3:
-                    eval.push(lvt.iload((byte) 3));
-                    break;
                 case IMUL:
                     eval.imul();
                     break;
@@ -116,21 +101,6 @@ public final class InterpMain {
                     break;
                 case IRETURN:
                     return eval.pop();
-                case ISTORE:
-                    lvt.store(instr[current++], eval.pop());
-                    break;
-                case ISTORE_0:
-                    lvt.store((byte) 0, eval.pop());
-                    break;
-                case ISTORE_1:
-                    lvt.store((byte) 1, eval.pop());
-                    break;
-                case ISTORE_2:
-                    lvt.store((byte) 2, eval.pop());
-                    break;
-                case ISTORE_3:
-                    lvt.store((byte) 3, eval.pop());
-                    break;
                 case ISUB:
                     eval.isub();
                     break;

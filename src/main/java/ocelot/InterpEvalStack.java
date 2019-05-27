@@ -80,42 +80,12 @@ public class InterpEvalStack extends Stack<JVMValue> {
         push(entry(or));
     }
 
-    void aconst_null() {
-        push(entryRef(0L));
-    }
-
     void dupX1() {
         JVMValue ev1 = pop();
         JVMValue ev2 = pop();
         push(ev1.copy());
         push(ev2);
         push(ev1);
-    }
-
-    void dconst(double d) {
-        push(entry(d));
-    }
-
-    void dadd() {
-        JVMValue ev1 = pop();
-        JVMValue ev2 = pop();
-        // For a runtime checking interpreter - type checks would go here...
-        double add = Double.longBitsToDouble(ev1.value) + Double.longBitsToDouble(ev2.value);
-        push(entry(add));
-    }
-
-    void i2d() {
-        JVMValue ev1 = pop();
-        double castTo = (double)ev1.value;
-        push(entry(castTo));
-    }
-
-    void dsub() {
-        JVMValue ev1 = pop();
-        JVMValue ev2 = pop();
-        // For a runtime checking interpreter - type checks would go here...
-        double sub = Double.longBitsToDouble(ev1.value) - Double.longBitsToDouble(ev2.value);
-        push(entry(sub));
     }
 
 }
