@@ -334,7 +334,7 @@ public final class OtKlassParser {
                 type = JVMType.valueOf(desc);
             }
 
-            System.out.println(name + " " + desc);
+//            System.out.println(name + " " + desc);
         }
 
         @Override

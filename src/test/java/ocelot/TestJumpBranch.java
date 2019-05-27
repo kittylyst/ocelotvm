@@ -40,7 +40,6 @@ public class TestJumpBranch {
     public void test_ifne() {
         byte[] buf = {ICONST_2.B(), ISTORE.B(), (byte) 1, ILOAD.B(), (byte) 1, IFNE.B(), (byte) 0, (byte) 6,
             IINC.B(), (byte) 1, (byte) 1, ILOAD.B(), (byte) 1, IRETURN.B()};
-        System.out.println(Arrays.toString(buf));
         JVMValue res = im.execMethod("", "main:()V", buf, new InterpLocalVars());
 
         assertEquals("Return type should be int", JVMType.I, res.type);
@@ -48,7 +47,6 @@ public class TestJumpBranch {
 
         byte[] buf2 = {ICONST_2.B(), ISTORE_1.B(), ILOAD_1.B(), IFNE.B(), (byte) 0, (byte) 6,
             IINC.B(), (byte) 1, (byte) 1, ILOAD.B(), (byte) 1, IRETURN.B()};
-        System.out.println(Arrays.toString(buf2));
         res = im.execMethod("", "main:()V", buf2, new InterpLocalVars());
 
         assertEquals("Return type should be int", JVMType.I, res.type);
