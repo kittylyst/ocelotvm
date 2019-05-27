@@ -55,14 +55,12 @@ public class TestIntArithmetic {
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 2", 2, (int) res.value);
 
-        // Using the raw bytes instead of the enum mnemonics
-        byte[] buf2 = {0x04, 0x02, 0x60, (byte) 0xac};
+        byte[] buf2 = {ICONST_1.B(), ICONST_M1.B(), IADD.B(), IRETURN.B()};
         res = im.execMethod("", "main:()V", buf2, new InterpLocalVars());
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be 0", 0, (int) res.value);
 
-        // Using the raw bytes instead of the enum mnemonics
-        byte[] buf3 = {0x05, 0x02, 0x68, (byte) 0xac};
+        byte[] buf3 = {ICONST_2.B(), ICONST_M1.B(), IMUL.B(), IRETURN.B()};
         res = im.execMethod("", "main:()V", buf3, new InterpLocalVars());
         assertEquals("Return type should be int", JVMType.I, res.type);
         assertEquals("Return value should be -2", -2, (int) res.value);
