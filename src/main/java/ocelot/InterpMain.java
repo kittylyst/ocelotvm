@@ -15,9 +15,6 @@ public final class InterpMain {
     // Singleton ?
     private static SharedKlassRepo repo = SharedKlassRepo.of();
 
-    // FIXME Pluggable heap impls...
-    private final JVMStorage heap = new SharedSimpleHeap();
-
     public InterpMain() {
     }
 
@@ -101,69 +98,11 @@ public final class InterpMain {
                 case BIPUSH:
                     eval.iconst((int) instr[current++]);
                     break;
-                case DADD:
-                    eval.dadd();
-                    break;
-                case DCONST_0:
-                    eval.dconst(0.0);
-                    break;
-                case DCONST_1:
-                    eval.dconst(1.0);
-                    break;
-                case DLOAD:
-                    eval.push(lvt.dload(instr[current++]));
-                    break;
-                case DLOAD_0:
-                    eval.push(lvt.dload((byte) 0));
-                    break;
-                case DLOAD_1:
-                    eval.push(lvt.dload((byte) 1));
-                    break;
-                case DLOAD_2:
-                    eval.push(lvt.dload((byte) 2));
-                    break;
-                case DLOAD_3:
-                    eval.push(lvt.dload((byte) 3));
-                    break;
-                case DRETURN:
-                    return eval.pop();
-                case DSTORE:
-                    lvt.store(instr[current++], eval.pop());
-                    break;
-                case DSTORE_0:
-                    lvt.store((byte) 0, eval.pop());
-                    break;
-                case DSTORE_1:
-                    lvt.store((byte) 1, eval.pop());
-                    break;
-                case DSTORE_2:
-                    lvt.store((byte) 2, eval.pop());
-                    break;
-                case DSTORE_3:
-                    lvt.store((byte) 3, eval.pop());
-                    break;
-                case DSUB:
-                    eval.dsub();
-                    break;
                 case DUP:
                     eval.dup();
                     break;
                 case DUP_X1:
                     eval.dupX1();
-                    break;
-                case GETFIELD:
-                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OtField field = repo.lookupField(klassName, (short) cpLookup);
-                    JVMValue receiver = eval.pop();
-                    // VERIFY: Should check to make sure receiver is an A
-                    OtObj obj = heap.findObject(receiver.value);
-                    eval.push(obj.getField(field));
-                    break;
-                case GETSTATIC:
-                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OtField f = repo.lookupField(klassName, (short) cpLookup);
-                    OtKlass fgKlass = f.getKlass();
-                    eval.push(fgKlass.getStaticField(f));
                     break;
                 case GOTO:
                     current += 2 + ((int) instr[current] << 8) + (int) instr[current + 1];
@@ -291,19 +230,6 @@ public final class InterpMain {
                 case INEG:
                     eval.ineg();
                     break;
-                case INVOKESPECIAL:
-                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    dispatchInvoke(repo.lookupMethodExact(klassName, (short) cpLookup), eval);
-                    break;
-                case INVOKESTATIC:
-                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    dispatchInvoke(repo.lookupMethodExact(klassName, (short) cpLookup), eval);
-                    break;
-                // FIXME DOES NOT ACTUALLY DO VIRTUAL LOOKUP YET
-                case INVOKEVIRTUAL:
-                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    dispatchInvoke(repo.lookupMethodVirtual(klassName, (short) cpLookup), eval);
-                    break;
                 case IOR:
                     eval.ior();
                     break;
@@ -330,16 +256,6 @@ public final class InterpMain {
                 case ISUB:
                     eval.isub();
                     break;
-                case MONITORENTER:
-                case MONITOREXIT:
-                    // FIXME TEMP
-                    eval.pop();
-                    break;
-                case NEW:
-                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OtKlass klass = repo.lookupKlass(klassName, (short) cpLookup);
-                    eval.push(entryRef(heap.allocateObj(klass)));
-                    break;
                 case NOP:
                     break;
                 case POP:
@@ -351,22 +267,6 @@ public final class InterpMain {
                         break;
                     }
                     eval.pop();
-                    break;
-                case PUTFIELD:
-                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OtField putf = repo.lookupField(klassName, (short) cpLookup);
-                    JVMValue val = eval.pop();
-                    JVMValue recvp = eval.pop();
-                    // VERIFY: Should check to make sure receiver is an A
-                    OtObj objp = heap.findObject(recvp.value);
-                    objp.putField(putf, val);
-                    break;
-                case PUTSTATIC:
-                    cpLookup = ((int) instr[current++] << 8) + (int) instr[current++];
-                    OtField puts = repo.lookupField(klassName, (short) cpLookup);
-                    OtKlass fKlass = puts.getKlass();
-                    JVMValue vals = eval.pop();
-                    fKlass.setStaticField(puts.getName(), vals);
                     break;
                 case RETURN:
                     return null;

@@ -44,9 +44,6 @@ public class TestClassReading {
         assertEquals("Entry 27 should be a UTF8", UTF8, cp2.getType());
         assertEquals("Entry 27 should be java/lang/Object", "java/lang/Object", cp2.getStr());
 
-//        for (int i =1; i < ce.getPoolItemCount(); i++) {
-//            System.out.println(ce.resolveAsString(i));
-//        }
         assertEquals("Entry 1 should be Object's ctor", "java/lang/Object.<init>:()V", ce.resolveAsString(1));
         ce.parseBasicTypeInfo();
         assertTrue(fName + " should be public", ce.isPublic());
@@ -93,10 +90,6 @@ public class TestClassReading {
         assertEquals(fName + " should have a method called <init>", "<init>", ce.getCPEntry(idx).getStr());
         idx = init.getDescIndex();
         assertEquals(fName + " should have a method of type ()V", "()V", ce.getCPEntry(idx).getStr());
-        byte[] b = init.getBuf();
-        System.out.println(Arrays.toString(b));
-//        InterpMain im = new InterpMain();
-//        im.execMethod(b);
     }
 
     @Test
@@ -116,20 +109,4 @@ public class TestClassReading {
         assertEquals("octest/SimpleFieldsAndMethods", clzName);
     }
 
-    @Test
-    public void check_clinit_runs() throws Exception {
-        String fName = "ClInit.class";
-        buf = Utils.pullBytes(fName);
-
-        InterpMain im = new InterpMain();
-        OtKlass klass = OtKlassParser.of(im, buf, "ClInit");
-
-        OtMethod meth = klass.getMethodByName("getTestMe:()I");
-        assertEquals("Flags should be public, static", ACC_PUBLIC | ACC_STATIC, meth.getFlags());
-        
-        JVMValue res = im.execMethod(meth);
-
-        assertEquals("Return type should be int", JVMType.I, res.type);
-        assertEquals("Return value should be 42", 42, (int) res.value);
-    }
 }
