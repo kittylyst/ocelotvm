@@ -119,21 +119,4 @@ public class TestIntArithmetic {
         assertEquals("Return value should be 8", 8, (int) res.value);
     }
 
-    @Test
-    @Ignore
-    public void TestIntIfEqPrim() {
-        byte[] buffy = {ICONST_1.B(), ICONST_1.B(), IADD.B(), ICONST_2.B(), IF_ICMPEQ.B(), (byte) 0, (byte) 11, ICONST_4.B(), GOTO.B(), (byte) 0, (byte) 12, ICONST_3.B(), IRETURN.B()};
-
-        JVMValue res = im.execMethod("", "main:()V", buffy, new InterpLocalVars());
-
-        assertEquals(JVMType.I, res.type);
-        assertEquals(2, ((int) res.value));
-
-        byte[] buffy2 = {ICONST_1.B(), ICONST_1.B(), IADD.B(), ICONST_3.B(), IF_ICMPEQ.B(), (byte) 0, (byte) 11, ICONST_4.B(), GOTO.B(), (byte) 0, (byte) 12, ICONST_3.B(), IRETURN.B()};
-        res = im.execMethod("", "main:()V", buffy2, new InterpLocalVars());
-
-        assertEquals(JVMType.I, res.type);
-        assertEquals(2, ((int) res.value));
-    }
-
 }
